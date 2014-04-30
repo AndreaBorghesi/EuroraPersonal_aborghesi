@@ -1,0 +1,72 @@
+# Makefile for an ILOG project
+# based on a template from http://www.jukie.net/bart/blog/makefile-template)
+
+# GENRAL SETTING ---------------------------------------------------------------
+SRC_FOLDER := src
+INC_FOLDER := include
+
+# SYSTEM SETTING ---------------------------------------------------------------
+CC := MACOSX_DEPLOYMENT_TARGET=10.7 clang++
+LD := MACOSX_DEPLOYMENT_TARGET=10.7 clang++
+CCFLAGS = -m64 -fPIC -fexceptions -fno-strict-aliasing -D_REENTRANT 
+LDFLAGS = 
+
+# ERROR HANDLING ---------------------------------------------------------------
+CCFLAGS += -pedantic -Wall -Wno-long-long
+
+# ILOG SPECIFIC STUFF ----------------------------------------------------------
+ILOG_PATH = /opt/ilog
+CCFLAGS += -DIL_STD -DILOUSEMT -DILM_REENTRANT
+CCFLAGS += -I${ILOG_PATH}/concert/include 
+CCFLAGS += -I${ILOG_PATH}/cpoptimizer/include
+
+LDFLAGS += -L${ILOG_PATH}/cpoptimizer/lib/x86-64_osx/static_pic -lcp
+LDFLAGS += -L${ILOG_PATH}/cplex/lib/x86-64_osx/static_pic -lcplex
+LDFLAGS += -L${ILOG_PATH}/concert/lib/x86-64_osx/static_pic -lconcert
+
+# SYSTEM SETTINGS, AGAIN -------------------------------------------------------
+# (appended to accommodate the linker dependency order)
+LDFLAGS += -lpthread -framework CoreFoundation -framework IOKit
+#LDFLAGS += -lpthread
+
+# DEBUG INFORMATION CONFIGURATION ----------------------------------------------
+# optimized mode
+CCFLAGS += -O3 -DNDEBUG
+# debug mode
+# CCFLAGS += -O0 -ggdb
+
+# TARGET 1 CONFIGURATION -------------------------------------------------------
+T1 := scheduler_MKS
+T1_SRCS :=  main_MKS.cpp #Util.cpp Scheduler.cpp IModel.cpp Model0.cpp QueueArray.cpp QueueReader.cpp Queue.cpp JobArray.cpp JobWriter.cpp JobReader.cpp Job.cpp NodeArray.cpp NodeReader.cpp Node.cpp
+#sched_exercise.cpp 
+# TARGETS ----------------------------------------------------------------------
+.PHONY: all ${T1} clean distclean 
+all:: ${T1}
+	
+# CLEAN TARGET IMPLEMENTATION --------------------------------------------------
+clean:: 
+	-rm -f ${T1} ${T1}_build/*
+
+distclean:: clean
+
+# TARGET 1 IMPLEMENTATION ------------------------------------------------------
+# (copy, paste & modify this stuff for other targets)
+T1_OBJS := ${T1_SRCS:.cpp=.o}
+T1_DEPS := ${T1_SRCS:.cpp=.dep}
+T1_XDEPS := $(wildcard ${T1_DEPS}) 
+
+ifneq (${T1_XDEPS},) 
+include ${T1_XDEPS} 
+endif 
+
+${T1}: $(addprefix ${T1}_build/,${T1_OBJS})
+	${CC} -o $@ $^ ${LDFLAGS}
+
+${T1}_build/%.o: ${SRC_FOLDER}/%.cpp ${T1}_build/%.dep ${T1}_build
+	${CC} ${CCFLAGS} -o $@ -c $<
+
+${T1}_build/%.dep: ${SRC_FOLDER}/%.cpp Makefile 
+	${CC} ${CCFLAGS} -MM $< > $@ 
+
+${T1}_build:
+	mkdir ${T1}_build

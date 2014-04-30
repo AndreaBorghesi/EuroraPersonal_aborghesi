@@ -1,0 +1,34 @@
+GOLD
+Commands path: /cineca/sysprod/gold/default/bin
+glsjob ------- /cineca/sysprod/gold/default/bin/glsjob
+
+
+
+HOME
+cd /eurora/home/userexternal/aborghes/
+
+
+
+PBS
+qstat -- display status of PBS batch jobs, queues, or servers
+qselect -- select PBS batch jobs
+tracejob -- print log messages for a PBS job
+
+#obtain list of finished jobs
+'qselect -s "F" -ts.gt.' + Tstart + " -ts.le." + Tend
+# example
+qselect -H -s "F" -ts.gt.201404020000.01 -ts.le.201404041000.01
+
+# get exec_host string
+qstat -H -n -1 jobId
+The exec_host string has the format:
+hosta/J1+hostb/J2*P+...
+where J1 and J2 are an index of the job on the named host and P is the number of processors
+allocated from that host to this job. P does not appear if it is 1
+
+
+# get startTime, endTime, QueueTime
+parse 'tracejob jobId' output
+
+
+
