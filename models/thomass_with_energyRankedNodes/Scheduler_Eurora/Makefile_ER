@@ -26,7 +26,7 @@ LDFLAGS += -L${ILOG_PATH}/concert/lib/x86-64_sles10_4.1/static_pic -lconcert
 
 # SYSTEM SETTINGS, AGAIN -------------------------------------------------------
 # (appended to accommodate the linker dependency order)
-#LDFLAGS += -lpthread -framework CoreFoundation -framework IOKit
+#LDFLAGS += -lpthread -framework CoreFoundation -framework IOKit -shared -v
 LDFLAGS += -lpthread
 
 # DEBUG INFORMATION CONFIGURATION ----------------------------------------------
@@ -36,8 +36,8 @@ CCFLAGS += -O3 -DNDEBUG
 # CCFLAGS += -O0 -ggdb
 
 # TARGET 1 CONFIGURATION -------------------------------------------------------
-T1 := scheduler_MKS_WT_NL
-T1_SRCS :=  main_MKS_WT_NL.cpp #Util.cpp Scheduler.cpp IModel.cpp Model0.cpp QueueArray.cpp QueueReader.cpp Queue.cpp JobArray.cpp JobWriter.cpp JobReader.cpp Job.cpp NodeArray.cpp NodeReader.cpp Node.cpp
+T1 := scheduler_ER
+T1_SRCS :=  main_ER.cpp #Util.cpp Scheduler.cpp IModel.cpp Model0.cpp QueueArray.cpp QueueReader.cpp Queue.cpp JobArray.cpp JobWriter.cpp JobReader.cpp Job.cpp NodeArray.cpp NodeReader.cpp Node.cpp
 #sched_exercise.cpp 
 # TARGETS ----------------------------------------------------------------------
 .PHONY: all ${T1} clean distclean 

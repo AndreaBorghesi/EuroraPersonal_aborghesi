@@ -1,5 +1,5 @@
-#include "Scheduler.hpp"
-#include "Scheduler2.hpp"
+#include "SchedulerBase.hpp"
+#include "SchedulerComposite.hpp"
 #include <stdio.h>
 #include <iostream>
 #include "Stats.hpp"
@@ -20,7 +20,7 @@ int main(int argc, const char * argv[])
 	string fQueue(argv[1]);
 	string fNodes(argv[2]);
 	string fJobs(argv[3]);
-	Scheduler2<Model22> s(fQueue,fNodes,fJobs,directory.str());
+	SchedulerComposite<Model_NL> s(fQueue,fNodes,fJobs,directory.str());
 	
 	
 	
@@ -54,7 +54,7 @@ int main(int argc, const char * argv[])
 	stringstream file("");
 	file<<directory.str();
 	
-	file<<"NumInLate_2MKS_2WT_Model25"<<".log";
+	file<<"NumInLate_MKS_WT"<<".log";
 	r.write(file.str(),s.getInitialTime());
 	/*
 	string statString=s.getStats();

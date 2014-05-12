@@ -76,4 +76,7 @@ grep 'Starting\|ends' /var/mail/aborghes >> times.log
 > /var/mail/aborghes
 
 # kill all load db lingering (various reasons/problems) processes
+# on eurora
 kill -9 `pgrep -f  load_db`
+# on PLX
+kill -9 `pgrep -f  33022`

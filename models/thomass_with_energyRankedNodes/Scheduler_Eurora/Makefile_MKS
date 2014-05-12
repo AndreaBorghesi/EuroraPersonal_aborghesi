@@ -6,8 +6,8 @@ SRC_FOLDER := src
 INC_FOLDER := include
 
 # SYSTEM SETTING ---------------------------------------------------------------
-CC := MACOSX_DEPLOYMENT_TARGET=10.7 clang++
-LD := MACOSX_DEPLOYMENT_TARGET=10.7 clang++
+CC := g++
+LD := g++
 CCFLAGS = -m64 -fPIC -fexceptions -fno-strict-aliasing -D_REENTRANT 
 LDFLAGS = 
 
@@ -15,19 +15,19 @@ LDFLAGS =
 CCFLAGS += -pedantic -Wall -Wno-long-long
 
 # ILOG SPECIFIC STUFF ----------------------------------------------------------
-ILOG_PATH = /opt/ilog
+ILOG_PATH = /opt/ibm/ILOG/CPLEX_Studio125
 CCFLAGS += -DIL_STD -DILOUSEMT -DILM_REENTRANT
 CCFLAGS += -I${ILOG_PATH}/concert/include 
 CCFLAGS += -I${ILOG_PATH}/cpoptimizer/include
 
-LDFLAGS += -L${ILOG_PATH}/cpoptimizer/lib/x86-64_osx/static_pic -lcp
-LDFLAGS += -L${ILOG_PATH}/cplex/lib/x86-64_osx/static_pic -lcplex
-LDFLAGS += -L${ILOG_PATH}/concert/lib/x86-64_osx/static_pic -lconcert
+LDFLAGS += -L${ILOG_PATH}/cpoptimizer/lib/x86-64_sles10_4.1/static_pic -lcp
+LDFLAGS += -L${ILOG_PATH}/cplex/lib/x86-64_sles10_4.1/static_pic -lilocplex -lcplex
+LDFLAGS += -L${ILOG_PATH}/concert/lib/x86-64_sles10_4.1/static_pic -lconcert
 
 # SYSTEM SETTINGS, AGAIN -------------------------------------------------------
 # (appended to accommodate the linker dependency order)
-LDFLAGS += -lpthread -framework CoreFoundation -framework IOKit
-#LDFLAGS += -lpthread
+#LDFLAGS += -lpthread -framework CoreFoundation -framework IOKit -shared -v
+LDFLAGS += -lpthread
 
 # DEBUG INFORMATION CONFIGURATION ----------------------------------------------
 # optimized mode

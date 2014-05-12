@@ -6,6 +6,7 @@
 #include <string>
 #include "Job.hpp"
 #include "Util.hpp"
+#include <stdlib.h>
 
 class JobReader
 {
@@ -61,11 +62,13 @@ inline std::vector<Job> JobReader::read()
 		realDuration = Util::strToTime(data3[1])-start;
 		//std::cout<<"qui02"<<std::endl;
 		if(data3[2].compare("--")!=0)
-			nodes=std::atoi(data3[2].c_str());
+			//nodes=std::atoi(data3[2].c_str());
+			nodes=atoi(data3[2].c_str());
 		else
 			nodes=-1;
 		if(data3[3].compare("--")!=0)
-			cores=std::atoi(data3[3].c_str());
+			//cores=std::atoi(data3[3].c_str());
+			cores=atoi(data3[3].c_str());
 		else
 		{
 			ready=false;
@@ -110,7 +113,8 @@ inline std::vector<Job> JobReader::read()
 				mul=1024*1024;
 			else if (data3[4][data3[4].size()-2]=='m')
 				mul=1024;
-			mem=std::atoi(data3[4].c_str())*mul;
+			//mem=std::atoi(data3[4].c_str())*mul;
+			mem=atoi(data3[4].c_str())*mul;
 		}
 		else 
 		{
@@ -137,14 +141,18 @@ inline std::vector<Job> JobReader::read()
 					//usedNodes[index]=1;
 			
 					//if(cores==-1)
-					cores+=std::atoi(sottoInfo[1].c_str());
+					//cores+=std::atoi(sottoInfo[1].c_str());
+					cores+=atoi(sottoInfo[1].c_str());
 					//if(!gpuMicPresenti || mic==-1 || gpu==-1)
 					//{
-					gpu+=std::atoi(sottoInfo[2].c_str());
-					mic+=std::atoi(sottoInfo[3].c_str());
+					//gpu+=std::atoi(sottoInfo[2].c_str());
+					//mic+=std::atoi(sottoInfo[3].c_str());
+					gpu+=atoi(sottoInfo[2].c_str());
+					mic+=atoi(sottoInfo[3].c_str());
 					//}
 					//if(mem==-1)
-					mem+=std::atoi(sottoInfo[4].c_str());
+					//mem+=std::atoi(sottoInfo[4].c_str());
+					mem+=atoi(sottoInfo[4].c_str());
 				}
 			}
 		}

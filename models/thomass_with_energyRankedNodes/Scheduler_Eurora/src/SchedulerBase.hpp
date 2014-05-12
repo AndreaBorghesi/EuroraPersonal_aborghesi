@@ -1,31 +1,13 @@
-#ifndef Def_Scheduler
-#define Def_Scheduler
+#ifndef Def_SchedulerBase
+#define Def_SchedulerBase
 #include "IModel.hpp"
-#include "Model0.hpp"
-#include "Model1.hpp"
-#include "Model2.hpp"
-//#include "Model3.hpp"
-//#include "Model4.hpp"
-#include "Model5.hpp"
-//#include "Model6.hpp"
-#include "Model7.hpp"
-#include "Model8.hpp"
-#include "Model9.hpp"
-#include "Model10.hpp"
-//#include "Model11.hpp"
-//#include "Model12.hpp"
-#include "Model13.hpp"
-#include "Model14.hpp"
-#include "Model15.hpp"
-#include "Model16.hpp"
-#include "Model17.hpp"
-#include "Model18.hpp"
-#include "Model19.hpp"
-#include "Model20.hpp"
-#include "Model21.hpp"
-#include "Model22.hpp"
+#include "Model_MKS.hpp"
+#include "Model_WT.hpp"
+#include "Model_NL.hpp"
+#include "Model_ER.hpp"
 #include "QueueArray.hpp"
 #include "NodeArray.hpp"
+#include "NodeEnergyUpdater.hpp"
 #include "JobArray.hpp"
 #include "Checker.hpp"
 #include "Stats.hpp"
@@ -35,7 +17,7 @@
 #include <sys/stat.h>
 
 
-template <class ModelType>class Scheduler
+template <class ModelType>class SchedulerBase
 {
 private:
 	QueueArray _queues;
@@ -79,10 +61,30 @@ public:
 		return _jobs;
 	}
 	IModel * getModel(){return _model;}
-	Scheduler(std::string fQueue,std::string fNode,std::string fJob,string directory){
+	SchedulerBase(std::string fQueue,std::string fNode,std::string nfFile,std::string rfMFile,std::string rfCFile,std::string eMFile,std::string eCFile,std::string fJob,string directory){
 
+		//std::cout<<"Inside SchedulerBase constructor"<<std::endl; 
+		
 		_queues=QueueArray(fQueue);
-		_nodes=NodeArray(fNode);
+		_nodes=NodeArray(fNode);  
+		
+		//std::cout<<"Before NodeEnergyUpdater "<<std::endl; 
+		
+		NodeEnergyUpdater u(nfFile,rfMFile,rfCFile,eMFile,eCFile);
+		
+		//std::cout<<"Before NodeEnergyUpdater "<<std::endl; 
+		//std::cout<<"After NodeEnergyUpdater update()"<<std::endl; 
+		u.setup(_nodes);
+		u.update(_nodes);
+		//std::cout<<"After NodeEnergyUpdater update()"<<std::endl; 
+		//test if energy info correctly read
+		
+		//std::cout<<"Before test"<<std::endl; 
+		//std::cout<<_nodes.size()<<std::endl;
+		
+		for(int i=0;i<_nodes.size();i++)
+			std::cout<<" ---- "<<_nodes[i].getNodeNumber()<<";"<<_nodes[i].getNominalFrequency()<<";"<<_nodes[i].getRealMEMFrequency()<<";"<<_nodes[i].getRealCPUFrequency()<<";"<<_nodes[i].getEnergyMEM()<<";"<<_nodes[i].getEnergyCPU()<<" ---- "<<std::endl;
+			
 		_jobs=JobArray(fJob);
 		_model=new ModelType(_queues,_nodes,_jobs);
 		_fJob=fJob;

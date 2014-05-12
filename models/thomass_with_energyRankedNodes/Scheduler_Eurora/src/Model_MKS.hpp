@@ -1,5 +1,5 @@
-#ifndef Def_Model20
-#define Def_Model20
+#ifndef Def_Model_MKS
+#define Def_Model_MKS
 #include "QueueArray.hpp"
 #include "NodeArray.hpp"
 #include "JobArray.hpp"
@@ -8,9 +8,10 @@
 #include <ilcp/cp.h>
 #include <vector>
 #include <stdio.h>
+#include <typeinfo>
 
 
-class Model20: public IModelAdvanced
+class Model_MKS: public IModelAdvanced
 {
 private:
 	int _minutesOfExecution;
@@ -33,13 +34,13 @@ private:
 	}
 	
 public:
-	Model20();
-	Model20(QueueArray queue,NodeArray nodes,JobArray jobs){_queue=queue,_nodes=nodes,_jobs=jobs;_minTime=1;_os=-1;_wt=-1;_wtDelta=-1;_nl=-1;_nlDelta=-1;_mk=-1;_mkDelta=-1;}
+	Model_MKS();
+	Model_MKS(QueueArray queue,NodeArray nodes,JobArray jobs){_queue=queue,_nodes=nodes,_jobs=jobs;_minTime=1;_os=-1;_wt=-1;_wtDelta=-1;_nl=-1;_nlDelta=-1;_mk=-1;_mkDelta=-1;}
 	JobArray solve(int refTime);
 	double getOptimalSolution(){return _os;}
 };
 
-inline JobArray Model20::solve(int refTime)
+inline JobArray Model_MKS::solve(int refTime)
 {
 	bool solved = false;
 	bool retry=false;

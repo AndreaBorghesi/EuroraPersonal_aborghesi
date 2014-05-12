@@ -1,5 +1,8 @@
-#ifndef Def_Model_WT
-#define Def_Model_WT
+//Extension of the orginal model of T.Bridi --> we consider the Energy Ranking
+//of the nodes and we minimize the consumed energy
+
+#ifndef Def_Model_ER
+#define Def_Model_ER
 #include "QueueArray.hpp"
 #include "NodeArray.hpp"
 #include "JobArray.hpp"
@@ -7,17 +10,19 @@
 #include "IModelAdvanced.hpp"
 #include <ilcp/cp.h>
 #include <vector>
+#include <algorithm>
 #include <stdio.h>
 #include <typeinfo>
 
 
-class Model_WT: public IModelAdvanced
+class Model_ER: public IModelAdvanced
 {
 private:
 	int _minutesOfExecution;
 	int _minTime;
 	double _os;
-
+	std::vector<double> _energyEfficiencies;
+	
 	
 	int numberOfJointNodes(Job j,Node n)
 	{
@@ -34,13 +39,13 @@ private:
 	}
 	
 public:
-	Model_WT();
-	Model_WT(QueueArray queue,NodeArray nodes,JobArray jobs){_queue=queue,_nodes=nodes,_jobs=jobs;_minTime=1;_os=-1;_wt=-1;_wtDelta=-1;_nl=-1;_nlDelta=-1;_mk=-1;_mkDelta=-1;}
+	Model_ER();
+	Model_ER(QueueArray queue,NodeArray nodes,JobArray jobs){_queue=queue,_nodes=nodes,_jobs=jobs;_minTime=1;_os=-1;_wt=-1;_wtDelta=-1;_nl=-1;_nlDelta=-1;_mk=-1;_mkDelta=-1;}
 	JobArray solve(int refTime);
 	double getOptimalSolution(){return _os;}
 };
 
-inline JobArray Model_WT::solve(int refTime)
+inline JobArray Model_ER::solve(int refTime)
 {
 	bool solved = false;
 	bool retry=false;
@@ -196,15 +201,60 @@ inline JobArray Model_WT::solve(int refTime)
 				model.add(usgMem[j] <= _nodes[j].getTotalMemory());
 			}
 
-			// define the problem objective
-			IloNumExprArray delay(env);
-			for (int i = 0; i < _jobs.size(); ++i) 
-			{
-				IloNum wait=_queue.getMaxMinutesToWait(_jobs[i].getQueue());
-				IloNumExpr ex=IloMax((IloStartOf(task[i])-_jobs[i].getEnterQueueTime()-wait)/wait,0);
-				delay.add(ex);
+
+			//define the problem objective
+			//IloIntExprArray ends(env);
+			//for (int i = 0; i < _jobs.size(); ++i) {
+			//	ends.add(IloEndOf(task[i]));
+			//}
+			//model.add(IloMinimize(env, IloMax(ends)));
+			
+			//compute energy efficiencies
+                        double maxEff;
+			double eff;
+			for (int j = 0; j< _nodes.size(); j++){
+				eff=(_nodes[j].getEnergyMEM() + _nodes[j].getEnergyCPU())/2;
+				_energyEfficiencies.push_back(eff);
 			}
-			model.add(IloMinimize(env, IloSum(delay)));
+			maxEff = * std::max_element(_energyEfficiencies.begin(), _energyEfficiencies.end());
+			//normalize energy coefficients
+			for (int j = 0; j< _nodes.size(); j++){
+				_energyEfficiencies[j] = _energyEfficiencies[j]/maxEff;
+				//std::cout << " Energy effs " << j << " " << _energyEfficiencies[j] << std::endl;
+			}
+
+//			IloIntVarArray nodesBinaryVars(env);  // 1 if a node is used, 0 otherwise
+//			std::vector<int> temp;
+//			for (int i = 0; i < _jobs.size(); ++i){
+//				for (int j = 0; j < _nodes.size(); j++){
+//					for(int k=0;k<numberOfJointNodes(_jobs[i],_nodes[j]);k++){
+//						if(UtilNodes[i][j][k].isPresent()){
+//							nodesBinaryVars.add(IloIntVar(env, 0, 1));
+//							temp.push_back(1);
+//						}
+//					}
+//				}
+//			}
+			
+//			std::cout << " Energy effs size " << _energyEfficiencies.size() << std::endl;
+//			std::cout << " nodesBinaryVars size " << temp.size() << std::endl;
+					
+					
+			IloNumExprArray jobEnergies(env);
+			std::vector<int> temp;
+			for (int i = 0; i < _jobs.size(); ++i) {
+				for (int j = 0; j < _nodes.size(); j++){
+					for(int k=0;k<numberOfJointNodes(_jobs[i],_nodes[j]);k++){
+						jobEnergies.add((IloMin(IloStartOf(UtilNodes[i][j][k]),1))*_energyEfficiencies[j]);
+						temp.push_back(1);
+						//jobEnergies.add(UtilNodes[i][j][k].isPresent()*_energyEfficiencies[j]);
+					}
+				}
+			}
+			model.add(IloMinimize(env, IloSum(jobEnergies)));
+			
+			std::cout << " Energy effs size " << _energyEfficiencies.size() << std::endl;
+			std::cout << " nodesBinaryVars size " << temp.size() << std::endl;
 	
 			// ================================
 			// = Bulid and configure a solver =

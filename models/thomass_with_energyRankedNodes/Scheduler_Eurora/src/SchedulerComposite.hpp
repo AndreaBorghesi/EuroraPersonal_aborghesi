@@ -1,32 +1,13 @@
-#ifndef Def_Scheduler2
-#define Def_Scheduler2
+#ifndef Def_SchedulerComposite
+#define Def_SchedulerComposite
 #include "IModel.hpp"
 #include "IModelAdvanced.hpp"
-#include "Model0.hpp"
-#include "Model1.hpp"
-#include "Model2.hpp"
-//#include "Model3.hpp"
-//#include "Model4.hpp"
-#include "Model5.hpp"
-//#include "Model6.hpp"
-#include "Model7.hpp"
-#include "Model8.hpp"
-#include "Model9.hpp"
-#include "Model10.hpp"
-//#include "Model11.hpp"
-//#include "Model12.hpp"
-#include "Model13.hpp"
-#include "Model14.hpp"
-#include "Model15.hpp"
-#include "Model16.hpp"
-#include "Model17.hpp"
-#include "Model18.hpp"
-#include "Model19.hpp"
-#include "Model20.hpp"
-#include "Model21.hpp"
-#include "Model22.hpp"
+#include "Model_MKS.hpp"
+#include "Model_WT.hpp"
+#include "Model_NL.hpp"
 #include "QueueArray.hpp"
 #include "NodeArray.hpp"
+#include "NodeEnergyUpdater.hpp"
 #include "JobArray.hpp"
 #include "Checker.hpp"
 #include "Stats.hpp"
@@ -36,7 +17,7 @@
 #include <sys/stat.h>
 
 
-template <class ModelType>class Scheduler2
+template <class ModelType>class SchedulerComposite
 {
 private:
 	QueueArray _queues;
@@ -80,10 +61,12 @@ public:
 		return _jobs;
 	}
 	IModel * getModel(){return _model;}
-	Scheduler2(std::string fQueue,std::string fNode,std::string fJob,string directory){
+	SchedulerComposite(std::string fQueue,std::string fNode,std::string nfFile,std::string rfMFile,std::string rfCFile,std::string eMFile,std::string eCFile,std::string fJob,string directory){
 
 		_queues=QueueArray(fQueue);
 		_nodes=NodeArray(fNode);
+		NodeEnergyUpdater u(nfFile,rfMFile,rfCFile,eMFile,eCFile);
+		u.update(_nodes);
 		_jobs=JobArray(fJob);
 		_model=new ModelType(_queues,_nodes,_jobs);
 		_fJob=fJob;
@@ -124,7 +107,7 @@ public:
 
 		if(wtDelta>0)
 		{
-			Model21 mwt(_queues,_nodes,_jobs);
+			Model_WT mwt(_queues,_nodes,_jobs);
 			Solve(refTime,&mwt);
 			std::cout<<"risolta parte wei tard con sol:"<<mwt.getOptimalSolution()<<std::endl;
 			_model->setWT(mwt.getOptimalSolution(),wtDelta);
@@ -134,7 +117,7 @@ public:
 
 		if(numLateDelta>0)
 		{
-			Model22 nl(_queues,_nodes,_jobs);
+			Model_NL nl(_queues,_nodes,_jobs);
 			Solve(refTime,&nl);
 			std::cout<<"risolta parte num late con sol:"<<nl.getOptimalSolution()<<std::endl;
 			_model->setNumLate(nl.getOptimalSolution(),numLateDelta);
@@ -144,7 +127,7 @@ public:
 		
 		if(makespanDelta>0)
 		{
-			Model20 mk(_queues,_nodes,_jobs);
+			Model_MKS mk(_queues,_nodes,_jobs);
 			Solve(refTime,&mk);
 			std::cout<<"risolta parte makesp con sol:"<<mk.getOptimalSolution()<<std::endl;
 			_model->setMK(mk.getOptimalSolution(),makespanDelta);

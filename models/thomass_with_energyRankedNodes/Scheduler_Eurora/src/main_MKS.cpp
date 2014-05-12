@@ -1,8 +1,8 @@
-#include "Scheduler.hpp"
 #include <stdio.h>
 #include <iostream>
 #include "Stats.hpp"
 #include <ctime>
+#include "SchedulerBase.hpp"
 
 using namespace std;
 int main(int argc, const char * argv[]) 
@@ -19,7 +19,7 @@ int main(int argc, const char * argv[])
 	string fQueue(argv[1]);
 	string fNodes(argv[2]);
 	string fJobs(argv[3]);
-	Scheduler<Model20> s(fQueue,fNodes,fJobs,directory.str());
+	SchedulerBase<Model_MKS> s(fQueue,fNodes,fJobs,directory.str());
 	
 	
 	cout<<Util::timeToStr(s.getInitialTime())<<endl;
@@ -56,7 +56,7 @@ int main(int argc, const char * argv[])
 	stringstream file("");
 	file<<directory.str();
 	
-	file<<"Makespan_Model20"<<".log";
+	file<<"Makespan_Model_MKS"<<".log";
 	r.write(file.str(),s.getInitialTime());
 	
 	/*string statString=s.getStats();

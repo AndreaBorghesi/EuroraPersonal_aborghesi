@@ -2,6 +2,7 @@
 #define Def_Stats
 #include <vector>
 #include "JobArray.hpp"
+#include "QueueArray.hpp"
 #include "Util.hpp"
 #include <stdio.h>
 #include <climits>

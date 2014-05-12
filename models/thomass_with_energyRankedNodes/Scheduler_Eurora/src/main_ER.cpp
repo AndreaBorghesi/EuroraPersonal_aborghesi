@@ -1,9 +1,8 @@
-#include "SchedulerBase.hpp"
-#include "SchedulerComposite.hpp"
 #include <stdio.h>
 #include <iostream>
 #include "Stats.hpp"
 #include <ctime>
+#include "SchedulerBase.hpp"
 
 using namespace std;
 int main(int argc, const char * argv[]) 
@@ -20,10 +19,21 @@ int main(int argc, const char * argv[])
 	string fQueue(argv[1]);
 	string fNodes(argv[2]);
 	string fJobs(argv[3]);
-	SchedulerComposite<Model_MKS> s(fQueue,fNodes,fJobs,directory.str());
+
+	//bad, bad practice
+	string nfFile = "data/NFreq_CPU_Bound.logprocessed";
+	string rfMFile = "data/RFreq_Mem_Bound.logprocessed";
+	string rfCFile = "data/RFreq_CPU_Bound.logprocessed";
+	string eMFile = "data/Energy_Mem_Bound.logprocessed";
+	string eCFile = "data/Energy_CPU_Bound.logprocessed";
 	
-	JobArray original=s.getOriginal();
+	//cout<<"Before SchedulerBase creation "<<endl;
+
+	SchedulerBase<Model_ER> s(fQueue,fNodes,nfFile,rfMFile,rfCFile,eMFile,eCFile,fJobs,directory.str());
 	
+	//cout<<"After SchedulerBase creation "<<endl;
+	
+	cout<<Util::timeToStr(s.getInitialTime())<<endl;
 	
 	stringstream dest;
 	JobArray r;
@@ -31,24 +41,18 @@ int main(int argc, const char * argv[])
 	time_t now=0;
 	while((now=s.findNextIstant(now))!=-1)
 	{
-		bool continua=false;
+
 		cout<<"Istante: "<<now<<endl;
 		dest.str("");
-		r=s.Solve(now,2,2,-1);
+		r=s.Solve(now);
 		/*for(int i=0;i<r.size();i++)
 		{
 				cout<<f<<" "<<r[i].toString(now)<<endl;
 		}*/
 		
 		precNow=now;
-		for(int i=0;i<original.size();i++)
-		{
-			//cout<<original[i].getEnterQueueTime()<<endl;
-			if(original[i].getEnterQueueTime()>now)
-				continua=true;
-		}
-		if(!continua)
-			break;
+
+		//break;
 	}
 	
 	for(int i=0;i<r.size();i++)
@@ -57,16 +61,19 @@ int main(int argc, const char * argv[])
 		cout<<r[i].toString(precNow)<<endl;
 		
 	}
+	
+	//cout<<Util::timeToStr(s.getInitialTime())<<endl;
+	//getchar();
 	stringstream file("");
 	file<<directory.str();
 	
-	file<<"Makespan_WT_NL"<<".log";
+	file<<"Energy_Rank_Model"<<".log";
 	r.write(file.str(),s.getInitialTime());
-	/*
-	string statString=s.getStats();
+	
+	/*string statString=s.getStats();
 	stringstream file("");
 	file<<directory.str();
-	file<<"Stats_num_late_2WT"<<typeid(*s.getModel()).name()<<".log";
+	file<<"Stats_Makespan"<<typeid(*s.getModel()).name()<<".log";
 	ofstream out(file.str().c_str());
 	out << statString;
 	out.close();

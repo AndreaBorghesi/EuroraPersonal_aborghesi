@@ -8,6 +8,7 @@
 #include <math.h>
 #include <sstream>
 #include <time.h> 
+#include <stdlib.h>
 //#include "chrono.hpp"
 //#include "boost/date_time/local_time/local_time.hpp"
 
@@ -29,7 +30,8 @@ private:
 			//t+=std::atoi(data[0].c_str())*60*60+std::atoi(data[0].c_str())*60;
 			for(int i=data.size()-1;i>=0;i--)
 			{
-				t+=std::atoi(data[i].c_str())*pow(60,data.size()-1-i);
+				//t+=std::atoi(data[i].c_str())*pow(60,data.size()-1-i);
+				t+=atoi(data[i].c_str())*pow(60,data.size()-1-i);
 			}
 		}
 		return t;
@@ -191,7 +193,8 @@ public:
 		} 
 		else
 		{
-			t+=std::atoi(data[0].c_str())*60*60+std::atoi(data[1].c_str())*60;
+			//t+=std::atoi(data[0].c_str())*60*60+std::atoi(data[1].c_str())*60;
+			t+=atoi(data[0].c_str())*60*60+atoi(data[1].c_str())*60;
 			/*for(int i=data.size()-1;i>=0;i--)
 			{
 			t+=std::atoi(data[i].c_str())*pow(60,data.size()-1-i);

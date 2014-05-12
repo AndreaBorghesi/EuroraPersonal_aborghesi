@@ -5,6 +5,7 @@
 #include <fstream>
 #include <string>
 #include "Queue.hpp"
+#include <stdlib.h>
 
 class QueueReader
 {
