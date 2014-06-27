@@ -14,28 +14,57 @@ import matplotlib.dates as mdates
 
 LOGNAME = "jobs.log"
 DATESFILE="date.tmp"
+
+# ORIGINAL THOMAS MODELS
 # 31 Marzo
 #DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/31_Marzo_corretto/"
 #PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/31_Marzo_corretto/plots2/"
 #STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/31_Marzo_corretto/stats/"
-## 1 Aprile 14:00-16:00
-#DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/1_Aprile_1400_1600/"
-#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/1_Aprile_1400_1600/plots/"
-#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/1_Aprile_1400_1600/stats/"
-# 1 Aprile 17:30-19:30
-#DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/1_Aprile_1730_1930/"
-#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/1_Aprile_1730_1930/plots/"
-#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/1_Aprile_1730_1930/stats/"
 # 2 Aprile 13:10-15:10
 #DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/2_Aprile_1310_1510/"
 #PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/2_Aprile_1310_1510/plots/"
 #STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/2_Aprile_1310_1510/stats/"
 # 3 Aprile 13:10-15:10
-DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/"
-PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/plots/"
-STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/stats/"
+#DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/"
+#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/plots/"
+#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/stats/"
+
+# ER MODELS
+#AVERAGE ENERGY (CPU AND MEM APPS)
+# 31 Marzo
+#DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_31_Marzo_corretto/"
+#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_31_Marzo_corretto/plots/"
+#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_31_Marzo_corretto/stats/"
+# 2 Aprile 13:10-15:10
+#DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_2_Aprile_1310_1510/"
+#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_2_Aprile_1310_1510/plots/"
+#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_2_Aprile_1310_1510/stats/"
+# 3 Aprile 13:10-15:10
+#DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_3_Aprile_1600_1800/"
+#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_3_Aprile_1600_1800/plots/"
+#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_3_Aprile_1600_1800/stats/"
+#WORST CASE
+# 31 Marzo
+#DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_WC_31_Marzo_corretto/"
+#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_WC_31_Marzo_corretto/plots/"
+#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_WC_31_Marzo_corretto/stats/"
+# 2 Aprile 13:10-15:10
+#DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_WC_2_Aprile_1310_1510/"
+#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_WC_2_Aprile_1310_1510/plots/"
+#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_WC_2_Aprile_1310_1510/stats/"
+# 3 Aprile 13:10-15:10
+#DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_WC_3_Aprile_1600_1800/"
+#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_WC_3_Aprile_1600_1800/plots/"
+#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_WC_3_Aprile_1600_1800/stats/"
+DIR="/media/sda4/eurora/data_analysis/job_profiling/temp/"
+PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/temp/plots/"
+STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/temp/stats/"
 
 
+#ENergy Specs INfo
+ENERGYDIR="/media/sda4/eurora/models/thomass_with_energyRankedNodes/"
+CPUBOUND_ENERGIES="Energy_CPU_Bound.log"
+MEMBOUND_ENERGIES="Energy_Mem_Bound.log"
 
 STEP=15    # defines the granularity of the sampling for the job profile (in seconds)
 QUEUE_CUTOFF=0   # defines after how many second a job is considered to actually be in queue 
@@ -46,6 +75,31 @@ AVG_QTIME_LOGPAR = 86400
 AVG_QTIME_PAR = 21600
 
 
+#parse energies info
+cpu_en_file = ENERGYDIR + CPUBOUND_ENERGIES
+mem_en_file = ENERGYDIR + MEMBOUND_ENERGIES
+cpuBound_energies = {}
+memBound_energies = {}
+# since on EURORA we have some nodes not working or we miss some data (for example on nodes used only for debug), 
+# but in our model we want to energetically rank all nodes we make some assumpionts for the missing values
+for i in  range(1,32):
+    cpuBound_energies[str(i)]=52500.0
+    memBound_energies[str(i)]=61500.0
+for i in  range(33,64):
+    cpuBound_energies[str(i)]=62500.0
+    memBound_energies[str(i)]=103000.0
+f = open(cpu_en_file,"r")
+lines = f.readlines()
+f.close()
+for line in lines:
+    data = line.split(";")
+    cpuBound_energies[str(data[0])]=float(data[1].rstrip())
+f = open(mem_en_file,"r")
+lines = f.readlines()
+f.close()
+for line in lines:
+    data = line.split(";")
+    memBound_energies[str(data[0])]=float(data[1].rstrip())
 
 for subdir, dirs, files in os.walk(DIR):
     for jobs_log in files:
@@ -85,6 +139,9 @@ for subdir, dirs, files in os.walk(DIR):
             N_jobs_DEBUG = 0
             N_jobs_PAR = 0
             N_jobs_LONGPAR = 0
+
+            energy_consumed_WC = 0           
+            energy_consumed_AVG = 0
 
 
 
@@ -149,6 +206,13 @@ for subdir, dirs, files in os.walk(DIR):
                 for r in resources:
                     gpu_req += int(r[2])
                     mic_req += int(r[3])
+
+                    # energies
+                    nodeId=r[0]
+                    nCores=int(r[1])
+                    if(int(nodeId)>0):   
+                        energy_consumed_AVG += (memBound_energies[nodeId]+cpuBound_energies[nodeId])/2*nCores/16
+                        energy_consumed_WC += max(memBound_energies[nodeId],cpuBound_energies[nodeId])*nCores/16
 
 
                 job_times_req = data[2].split(';')
@@ -402,6 +466,9 @@ for subdir, dirs, files in os.walk(DIR):
             wrtxt += "\nN_jobs_DEBUG: " + str(N_jobs_DEBUG)
             wrtxt += "\nN_jobs_PAR: " + str(N_jobs_PAR)
             wrtxt += "\nN_jobs_LONGPAR: " + str(N_jobs_LONGPAR)
+
+            wrtxt += "\n\nenergy_consumed_AVG: " + str(energy_consumed_AVG)
+            wrtxt += "\n\nenergy_consumed_WC: " + str(energy_consumed_WC)
 
 
 

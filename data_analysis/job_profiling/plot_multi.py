@@ -2,7 +2,7 @@
 
 '''
 @Author: Andrea Borghesi
-    Job Profiling script - taken a list of job which executed on Eurora in a time interval, compute average load of the whole machine
+    Job Profiling script - compare multiple models
 '''
 
 import os
@@ -14,8 +14,8 @@ import numpy as np
 
 LOGNAME = "jobs.log"
 DATESFILE="date.tmp"
-DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/31_Marzo_corretto/"
-PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/31_Marzo_corretto/plots2/"
+DIR="/media/sda4/eurora/data_analysis/job_profiling/modelComparison/log/"
+PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/modelComparison/plots/"
 STEP=15    # defines the granularity of the sampling for the job profile (in seconds)
 QUEUE_CUTOFF=0   # defines after how many second a job is considered to actually be in queue 
 # average queue times in seconds

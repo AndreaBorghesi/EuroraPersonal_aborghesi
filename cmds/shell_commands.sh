@@ -80,3 +80,7 @@ grep 'Starting\|ends' /var/mail/aborghes >> times.log
 kill -9 `pgrep -f  load_db`
 # on PLX
 kill -9 `pgrep -f  33022`
+
+# crontab: execute every 2 hours
+crontab -e
+0 */2 * * * /eurora/home/userexternal/aborghes/from_micrelSSC/data/downloadLog.sh

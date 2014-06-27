@@ -15,26 +15,22 @@ import matplotlib.dates as mdates
 LOGNAME = "jobs.log"
 DATESFILE="date.tmp"
 # 31 Marzo
-#DIR="/media/sda4/eurora/data_analysis/job_profiling/dataPBS_31Marzo/"
-#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/31_Marzo_corretto/plots_pbs/"
-#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/31_Marzo_corretto/stats_pbs/"
-# 1 Aprile 1400 1600
-#DIR="/media/sda4/eurora/data_analysis/job_profiling/dataPBS_1Aprile_1400_1600/"
-#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/1_Aprile_1400_1600/plots_pbs/"
-#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/1_Aprile_1400_1600/stats_pbs/"
-# 1 Aprile 1730 1730
-#DIR="/media/sda4/eurora/data_analysis/job_profiling/dataPBS_1Aprile_1730_1930/"
-#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/1_Aprile_1730_1930/plots_pbs/"
-#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/1_Aprile_1730_1930/stats_pbs/"
+DIR="/media/sda4/eurora/data_analysis/job_profiling/dataPBS_31Marzo/"
+PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/31_Marzo_corretto/plots_pbs/"
+STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/31_Marzo_corretto/stats_pbs/"
 # 2 Aprile 
 #DIR="/media/sda4/eurora/data_analysis/job_profiling/dataPBS_2Aprile_1310_1510/"
 #PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/2_Aprile_1310_1510/plots_pbs/"
 #STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/2_Aprile_1310_1510/stats_pbs/"
 # 3 Aprile 
-DIR="/media/sda4/eurora/data_analysis/job_profiling/dataPBS_3Aprile_1600_1800/"
-PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/plots_pbs/"
-STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/stats_pbs/"
+#DIR="/media/sda4/eurora/data_analysis/job_profiling/dataPBS_3Aprile_1600_1800/"
+#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/plots_pbs/"
+#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/stats_pbs/"
 
+#ENergy Specs INfo
+ENERGYDIR="/media/sda4/eurora/models/thomass_with_energyRankedNodes/"
+CPUBOUND_ENERGIES="Energy_CPU_Bound.log"
+MEMBOUND_ENERGIES="Energy_Mem_Bound.log"
 
 STEP=15    # defines the granularity of the sampling for the job profile (in seconds)
 QUEUE_CUTOFF=0   # defines after how many second a job is considered to actually be in queue 
@@ -44,6 +40,34 @@ NCORES=976
 AVG_QTIME_DEBUG = 1800   
 AVG_QTIME_LOGPAR = 86400
 AVG_QTIME_PAR = 21600
+
+#parse energies info
+cpu_en_file = ENERGYDIR + CPUBOUND_ENERGIES
+mem_en_file = ENERGYDIR + MEMBOUND_ENERGIES
+cpuBound_energies = {}
+memBound_energies = {}
+# since on EURORA we have some nodes not working or we miss some data (for example on nodes used only for debug), 
+# but in our model we want to energetically rank all nodes we make some assumpionts for the missing values
+for i in  range(1,32):
+    cpuBound_energies[str(i)]=52500.0
+    memBound_energies[str(i)]=61500.0
+for i in  range(33,64):
+    cpuBound_energies[str(i)]=62500.0
+    memBound_energies[str(i)]=103000.0
+f = open(cpu_en_file,"r")
+lines = f.readlines()
+f.close()
+for line in lines:
+    data = line.split(";")
+    cpuBound_energies[str(data[0])]=float(data[1].rstrip())
+f = open(mem_en_file,"r")
+lines = f.readlines()
+f.close()
+for line in lines:
+    data = line.split(";")
+    memBound_energies[str(data[0])]=float(data[1].rstrip())
+
+
 
 tot_time_in_q = 0              # sum the time spent in queue by jobs
 tot_time_in_q_weighted = 0
@@ -88,6 +112,10 @@ N_jobs_req_6core = 0
 N_jobs_req_8core = 0
 N_jobs_req_7core = 0
 N_jobs_req_8plus_core = 0
+
+energy_consumed_WC = 0           
+energy_consumed_AVG = 0
+
 
 
 # read interval datetimes from file
@@ -141,6 +169,13 @@ for line in iter(status.stdout.readline,''):
     gpu_req = 0
     mic_req = 0
     for r in resources:
+
+        # energies
+        nodeId=r[0]
+        nCores=int(r[1])
+        if(int(nodeId)>0):   
+            energy_consumed_AVG += (memBound_energies[nodeId]+cpuBound_energies[nodeId])/2*nCores/16
+            energy_consumed_WC += max(memBound_energies[nodeId],cpuBound_energies[nodeId])*nCores/16
         gpu_req += int(r[2])
         mic_req += int(r[3])
 
@@ -395,6 +430,10 @@ wrtxt += "\nN_jobs_req_6core: " + str(N_jobs_req_6core)
 wrtxt += "\nN_jobs_req_7core: " + str(N_jobs_req_7core)
 wrtxt += "\nN_jobs_req_8core: " + str(N_jobs_req_8core)
 wrtxt += "\nN_jobs_req_8plus_core: " + str(N_jobs_req_8plus_core)
+
+wrtxt += "\n\nenergy_consumed_AVG: " + str(energy_consumed_AVG)
+wrtxt += "\n\nenergy_consumed_WC: " + str(energy_consumed_WC)
+
 
 
 with(open(statsfile,'w')) as sf:

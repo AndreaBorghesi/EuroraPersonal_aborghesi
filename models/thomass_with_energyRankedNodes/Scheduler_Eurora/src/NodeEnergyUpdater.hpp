@@ -1,4 +1,4 @@
-#ifndef Def_NodeEnergyUpdater
+j#ifndef Def_NodeEnergyUpdater
 #define Def_NodeEnergyUpdater
 #include <vector>
 #include <iostream>

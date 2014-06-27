@@ -26,7 +26,7 @@ inline std::vector<Node> NodeReader::read()
 	{
 		std::cout << "ERROR: Could not open file \"" << _file << "\"" << std::endl;
 		exit(1);
-	}
+	}j
 	
 	std::vector<Node> node;
 	while (!input.eof())

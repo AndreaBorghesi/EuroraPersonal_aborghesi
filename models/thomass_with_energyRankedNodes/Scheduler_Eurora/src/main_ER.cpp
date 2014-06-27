@@ -1,3 +1,4 @@
+//main to launch Model Energy Rank, energy computed as average
 #include <stdio.h>
 #include <iostream>
 #include "Stats.hpp"
@@ -43,14 +44,24 @@ int main(int argc, const char * argv[])
 	{
 
 		cout<<"Istante: "<<now<<endl;
+		
 		dest.str("");
 		r=s.Solve(now);
-		/*for(int i=0;i<r.size();i++)
+		
+		cout<<"R.size: "<<r.size()<<endl;
+		
+		for(int i=0;i<r.size();i++)
 		{
-				cout<<f<<" "<<r[i].toString(now)<<endl;
-		}*/
+				cout<<" "<<r[i].toString(now)<<endl;
+		}
 		
 		precNow=now;
+
+		stringstream file("");
+		file<<directory.str();
+		
+		file<<"Energy_Rank_Model"<<".log";
+		r.write(file.str(),s.getInitialTime());
 
 		//break;
 	}

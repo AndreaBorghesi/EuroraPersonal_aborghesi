@@ -5,6 +5,7 @@
 #include "Model_WT.hpp"
 #include "Model_NL.hpp"
 #include "Model_ER.hpp"
+#include "Model_ER_WC.hpp"
 #include "QueueArray.hpp"
 #include "NodeArray.hpp"
 #include "NodeEnergyUpdater.hpp"

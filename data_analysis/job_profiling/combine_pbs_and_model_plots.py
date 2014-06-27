@@ -2,7 +2,7 @@
 
 '''
 @Author: Andrea Borghesi
-    Job Profiling script - taken a list of job which executed on Eurora in a time interval, compute average load of the whole machine
+    Job Profiling script - compare PBS and one of our model (pbs dump must have been previously created)
 '''
 
 import os
@@ -15,6 +15,8 @@ import matplotlib.dates as mdates
 
 LOGNAME = "jobs.log"
 DATESFILE="date.tmp"
+
+# ORIGINAL THOMAS MODELS
 # 31 Marzo
 #DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/31_Marzo_corretto/"
 #PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/31_Marzo_corretto/plots_print/"
@@ -36,10 +38,49 @@ DATESFILE="date.tmp"
 #STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/2_Aprile_1310_1510/stats/"
 #DUMPDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/2_Aprile_1310_1510/pbs_dump/"
 # 3 Aprile 16:00-18:00
-DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/"
-PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/plots_print/"
-STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/stats/"
-DUMPDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/pbs_dump/"
+#DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/"
+#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/plots_print/"
+#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/stats/"
+#DUMPDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/pbs_dump/"
+
+# ER MODELS
+#AVERAGE ENERGY (CPU AND MEM APPS)
+# 31 Marzo
+#DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_31_Marzo_corretto/"
+#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_31_Marzo_corretto/plots_print/"
+#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_31_Marzo_corretto/stats/"
+#DUMPDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_31_Marzo_corretto/pbs_dump/"
+# 2 Aprile 13:10-15:10
+#DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_2_Aprile_1310_1510/"
+#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_2_Aprile_1310_1510/plots_print/"
+#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_2_Aprile_1310_1510/stats/"
+#DUMPDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_2_Aprile_1310_1510/pbs_dump/"
+# 3 Aprile 13:10-15:10
+#DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_3_Aprile_1600_1800/"
+#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_3_Aprile_1600_1800/plots_print/"
+#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_3_Aprile_1600_1800/stats/"
+#DUMPDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_3_Aprile_1600_1800/pbs_dump/"
+#WORST CASE
+#DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_WC_31_Marzo_corretto/"
+#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_WC_31_Marzo_corretto/plots_print/"
+#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_WC_31_Marzo_corretto/stats/"
+#DUMPDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_31_Marzo_corretto/pbs_dump/"
+# 2 Aprile 13:10-15:10
+#DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_WC_2_Aprile_1310_1510/"
+#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_WC_2_Aprile_1310_1510/plots_print/"
+#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_WC_2_Aprile_1310_1510/stats/"
+#DUMPDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_2_Aprile_1310_1510/pbs_dump/"
+# 3 Aprile 13:10-15:10
+#DIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_WC_3_Aprile_1600_1800/"
+#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_WC_3_Aprile_1600_1800/plots_print/"
+#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_WC_3_Aprile_1600_1800/stats/"
+#DUMPDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/ER_3_Aprile_1600_1800/pbs_dump/"
+
+DIR="/media/sda4/eurora/data_analysis/job_profiling/temp/"
+PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/temp/plots_print/"
+STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/temp/stats/"
+DUMPDIR="/media/sda4/eurora/data_analysis/job_profiling/temp/pbs_dump/"
+
 
 
 STEP=15    # defines the granularity of the sampling for the job profile (in seconds)
@@ -56,7 +97,7 @@ PBS_job_exec_time_series = pickle.load(open(pbs_dump_file,"rb"))
 
 for subdir, dirs, files in os.walk(DIR):
     for jobs_log in files:
-        if (jobs_log.endswith(".log") and jobs_log.startswith("Makespan_WT_NL")):
+        if (jobs_log.endswith(".log") and (jobs_log.startswith("Makespan_WT_NL") or jobs_log.startswith("Energy"))):
 
             # read interval datetimes from file
             datefile = DIR + DATESFILE

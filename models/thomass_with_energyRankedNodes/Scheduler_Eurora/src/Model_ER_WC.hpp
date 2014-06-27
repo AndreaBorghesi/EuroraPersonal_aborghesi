@@ -1,9 +1,9 @@
 //Extension of the orginal model of T.Bridi --> we consider the Energy Ranking
 //of the nodes and we minimize the consumed energy
-//The energy rank of each node is the average of the MEM and CPU apps energy results
+//The energy rank of each node is the worst value among the MEM and CPU apps energy results
 
-#ifndef Def_Model_ER
-#define Def_Model_ER
+#ifndef Def_Model_ER_WC
+#define Def_Model_ER_WC
 #include "QueueArray.hpp"
 #include "NodeArray.hpp"
 #include "JobArray.hpp"
@@ -16,7 +16,7 @@
 #include <typeinfo>
 
 
-class Model_ER: public IModelAdvanced
+class Model_ER_WC: public IModelAdvanced
 {
 private:
 	int _minutesOfExecution;
@@ -40,18 +40,18 @@ private:
 	}
 	
 public:
-	Model_ER();
-	Model_ER(QueueArray queue,NodeArray nodes,JobArray jobs){_queue=queue,_nodes=nodes,_jobs=jobs;_minTime=1;_os=-1;_wt=-1;_wtDelta=-1;_nl=-1;_nlDelta=-1;_mk=-1;_mkDelta=-1;}
+	Model_ER_WC();
+	Model_ER_WC(QueueArray queue,NodeArray nodes,JobArray jobs){_queue=queue,_nodes=nodes,_jobs=jobs;_minTime=1;_os=-1;_wt=-1;_wtDelta=-1;_nl=-1;_nlDelta=-1;_mk=-1;_mkDelta=-1;}
 	JobArray solve(int refTime);
 	double getOptimalSolution(){return _os;}
 };
 
-inline JobArray Model_ER::solve(int refTime)
+inline JobArray Model_ER_WC::solve(int refTime)
 {
 	bool solved = false;
 	bool retry=false;
 	_minutesOfExecution=_minTime;
-	IloInt timeLimit = 10*_minutesOfExecution;
+	IloInt timeLimit = 60*_minutesOfExecution;
 	
 	try	
 	{
@@ -213,169 +213,52 @@ inline JobArray Model_ER::solve(int refTime)
 			//compute energy efficiencies
                         double maxEff;
 			double eff;
-			for(int j = 0; j < _nodes.size(); j++)
-				_energyEfficiencies.push_back(0);
 			for (int j = 0; j< _nodes.size(); j++){
-				eff=(_nodes[j].getEnergyMEM() + _nodes[j].getEnergyCPU())/2; //MEM and CPU average
-				_energyEfficiencies[j]=eff;
+				eff=std::max(_nodes[j].getEnergyMEM(),_nodes[j].getEnergyCPU()); //WC case
+				_energyEfficiencies.push_back(eff);
 			}
 			maxEff = * std::max_element(_energyEfficiencies.begin(), _energyEfficiencies.end());
-			//normalize energy coefficientskk
+			//normalize energy coefficients
 			for (int j = 0; j< _nodes.size(); j++){
 				_energyEfficiencies[j] = _energyEfficiencies[j]/maxEff;
 				//std::cout << " Energy effs " << j << " " << _energyEfficiencies[j] << std::endl;
 			}
 
-
-		        //First version	
-			//IloNumExprArray jobEnergies(env);
-			//std::vector<int> temp;
-			//for (int i = 0; i < _jobs.size(); ++i) {
-			//	for (int j = 0; j < _nodes.size(); j++){
-			//		for(int k=0;k<numberOfJointNodes(_jobs[i],_nodes[j]);k++){
-                        //                        //the energy value at our disposal is the sum of all the (average) core energies in the nodes
-			//			//the exact job energy depends on the number of used cores
-			//			//if(_jobs[i].isScheduled() && _jobs[i].getStartTime()<refTime)
-			//			jobEnergies.add((IloMin(IloStartOf(UtilNodes[i][j][k]),1))*_energyEfficiencies[j]/16*_jobs[i].getNumberOfCores());
-			//			temp.push_back(1);
-			//			//jobEnergies.add(UtilNodes[i][j][k].isPresent()*_energyEfficiencies[j]);
-			//		}
-			//	}
-			//}
-			//std::cout << "Num jobEnergies: " << temp.size() << "\n" ;
-			//std::cout << "Num jobs: " << _jobs.size() << "\n" ;
-			//std::cout << "Num nodes * jobs: " << _nodes.size()*_jobs.size()  << "\n" ;
-			//model.add(IloMinimize(env, IloSum(jobEnergies)));
-
-
-                        //Second version - almost identical to first one but sligtly better results
-			//IloNumExprArray node_consumed_energies(env); 
-			//std::vector<int> temp;
-			//for (int j = 0; j < _nodes.size(); j++) {
-			//	node_consumed_energies.add(IloNumExpr(env));
-			//	for (int i = 0; i < _jobs.size(); i++) {
-			//		for(int k=0;k<numberOfJointNodes(_jobs[i],_nodes[j]);k++)
-			//		{
-			//			node_consumed_energies[j] += ((IloMin(IloStartOf(UtilNodes[i][j][k]),1))*_energyEfficiencies[j]/16*_jobs[i].getNumberOfCores());
-			//		}
-			//	}
-			//}
-			//model.add(IloMinimize(env, IloSum(node_consumed_energies)));
-
-		        
-			//create binary vars for jobs on nodes: 1 if a job is executing on a node, 0 otherwise -- Xij
-			//IloArray<IloIntVarArray> jobsOnNodes(env);	
-			//for(int i=0; i< _jobs.size(); i++){
-			//	IloIntVarArray jobNodes(env);
-			//	for(int j=0; j< _nodes.size(); j++){
-			//		char vname[10];
-			//		sprintf(vname, "x_%d_%d", i, j);
-			//		jobNodes.add(IloIntVar(env,0,1,vname));
-			//	}
-			//	jobsOnNodes.add(jobNodes);
-			//}
-			//int jobPresentOnNode;
-			//for(int i=0; i< _jobs.size(); i++){
-			//	for(int j=0; j< _nodes.size(); j++){
-                        //                IloExpr presenceVar_startTime_link(env);
-			//		jobPresentOnNode=0;
-			//		for(int k=0; k<numberOfJointNodes(_jobs[i],_nodes[j]);k++){
-			//			if(UtilNodes[i][j][k].isPresent()){
-			//				jobPresentOnNode=1;
-			//			}
-			//		}
-			//		presenceVar_startTime_link = jobsOnNodes[i][j] - jobPresentOnNode;
-			//		model.add(presenceVar_startTime_link == 0);
-			//	}
-			//}
-			//IloNumExprArray jobEnergies(env);
-			//for(int i=0; i<_jobs.size(); i++)
-			//	for(int j=0;j<_nodes.size();j++)
-			//		jobEnergies.add(jobsOnNodes[i][j]*_energyEfficiencies[j]/16*_jobs[i].getNumberOfCores());
-			//model.add(IloMinimize(env, IloSum(jobEnergies)));
-
-
-			//Version with presence logical constraints 
-			//IloNumExprArray jobEnergies(env);
-			//bool firstIter = true;
-			//if(!firstIter)
-			//	jobEnergies.endElements();
-			//std::vector<int> temp;
-			//for (int i = 0; i < _jobs.size(); ++i) {
-			//	IloNumExprArray jobPresentOnNode_array(env);
-			//	for (int j = 0; j < _nodes.size(); j++){
-			//		IloNumExpr jobPresentOnNode(env);
-			//		for(int k=0;k<numberOfJointNodes(_jobs[i],_nodes[j]);k++){
-			//			temp.push_back(1);
-			//			jobPresentOnNode = IloPresenceOf(env,UtilNodes[i][j][k]) * _energyEfficiencies[j]/16*_jobs[i].getNumberOfCores();
-			//			jobPresentOnNode_array.add(jobPresentOnNode);
-			//			
-			//			//jobEnergies.add((IloPresenceOf(env,UtilNodes[i][j][k]))*_energyEfficiencies[j]/16*_jobs[i].getNumberOfCores());
-			//		}
-			//		//jobEnergies.add(jobPresentOnNode*_energyEfficiencies[j]/16*_jobs[i].getNumberOfCores());
-			//		//jobEnergies.add(jobPresentOnNode);
-			//		//jobPresentOnNode_array.add(jobPresentOnNode);
-			//		//std::cout << ">>>>>>>>> JobOnNodes <<<<<<<<<<<" << "\n";
-			//		//std::cout << "jobPresentOnNode: " << jobPresentOnNode << "\n" ;
-			//		//std::cout << "jobPresentOnNode_array: " << jobPresentOnNode_array << "\n" ;
-			//	}
-			//	jobEnergies.add(IloSum(jobPresentOnNode_array));
-			//}
-			//model.add(IloMinimize(env, IloSum(jobEnergies)));
+//			IloIntVarArray nodesBinaryVars(env);  // 1 if a node is used, 0 otherwise
+//			std::vector<int> temp;
+//			for (int i = 0; i < _jobs.size(); ++i){
+//				for (int j = 0; j < _nodes.size(); j++){
+//					for(int k=0;k<numberOfJointNodes(_jobs[i],_nodes[j]);k++){
+//						if(UtilNodes[i][j][k].isPresent()){
+//							nodesBinaryVars.add(IloIntVar(env, 0, 1));
+//							temp.push_back(1);
+//						}
+//					}
+//				}
+//			}
 			
-			
-			//Combine presence logical constraint and binary variables
-			IloArray<IloIntVarArray> jobsOnNodes(env);	
-			for(int i=0; i< _jobs.size(); i++){
-				IloIntVarArray jobNodes(env);
-				for(int j=0; j< _nodes.size(); j++){
-					char vname[10];
-					sprintf(vname, "x_%d_%d", i, j);
-					jobNodes.add(IloIntVar(env,0,1,vname));
-				}
-				jobsOnNodes.add(jobNodes);
-			}
-			int jobPresentOnNode_BIN;
-			for(int i=0; i< _jobs.size(); i++){
-				for(int j=0; j< _nodes.size(); j++){
-                                        IloExpr presenceVar_startTime_link(env);
-					jobPresentOnNode_BIN=0;
-					for(int k=0; k<numberOfJointNodes(_jobs[i],_nodes[j]);k++){
-						if(UtilNodes[i][j][k].isPresent()){
-							jobPresentOnNode_BIN=1;
-						}
-					}
-					presenceVar_startTime_link = jobsOnNodes[i][j] - jobPresentOnNode_BIN;
-					model.add(presenceVar_startTime_link == 0);
-				}
-			}
-						IloNumExprArray jobEnergies(env);
-			bool firstIter = true;
-			if(!firstIter)
-				jobEnergies.endElements();
+//			std::cout << " Energy effs size " << _energyEfficiencies.size() << std::endl;
+//			std::cout << " nodesBinaryVars size " << temp.size() << std::endl;
+					
+					
+			IloNumExprArray jobEnergies(env);
 			std::vector<int> temp;
 			for (int i = 0; i < _jobs.size(); ++i) {
-				IloNumExprArray jobPresentOnNode_array(env);
 				for (int j = 0; j < _nodes.size(); j++){
-					IloNumExpr jobPresentOnNode_PRE(env);
 					for(int k=0;k<numberOfJointNodes(_jobs[i],_nodes[j]);k++){
+						//the energy value at our disposal is the sum of all the (average) core energies in the nodes
+						//the exact job energy depends on the number of used cores
+						jobEnergies.add((IloMin(IloStartOf(UtilNodes[i][j][k]),1))*_energyEfficiencies[j]/16*_jobs[i].getNumberOfCores());
 						temp.push_back(1);
-						jobPresentOnNode_PRE = IloPresenceOf(env,UtilNodes[i][j][k]) * _energyEfficiencies[j]/16*_jobs[i].getNumberOfCores();
-						jobPresentOnNode_array.add(jobPresentOnNode_PRE);
-						
+						//jobEnergies.add(UtilNodes[i][j][k].isPresent()*_energyEfficiencies[j]);
 					}
 				}
-				jobEnergies.add(IloSum(jobPresentOnNode_array));
 			}
-
-			IloNumExprArray jobEnergies_and_vars(env);
-			for(int i=0; i<_jobs.size(); i++)
-				for(int j=0;j<_nodes.size();j++)
-					jobEnergies_and_vars.add(jobsOnNodes[i][j]*jobEnergies[i]);
-			model.add(IloMinimize(env, IloSum(jobEnergies_and_vars)));
-
-
-		  	
+			model.add(IloMinimize(env, IloSum(jobEnergies)));
+			
+			std::cout << " Energy effs size " << _energyEfficiencies.size() << std::endl;
+			std::cout << " nodesBinaryVars size " << temp.size() << std::endl;
+	
 			// ================================
 			// = Bulid and configure a solver =
 			// ================================
@@ -388,7 +271,7 @@ inline JobArray Model_ER::solve(int refTime)
 	
 			// DEFINING A TIME LIMIT
 			// other limit types are described the solver documentation
-			timeLimit = 10*_minutesOfExecution;
+			timeLimit = 60*_minutesOfExecution;
 			cp.setParameter(IloCP::TimeLimit, timeLimit);
 			
 			// LOG EVERY N BRANCHES:
@@ -424,32 +307,20 @@ inline JobArray Model_ER::solve(int refTime)
 				
 				// "remember" that at least a solution was found
 				solved = true;
-				firstIter = false;
 				retry=false;
+				_minutesOfExecution=_minTime;
 				std::cout << "***** SOLUTION FOUND ***** time: " << cp.getInfo(IloCP::SolveTime) <<" makespan: " << cp.getObjValue() << std::endl;
 			
-				//DE-COMMENT THIS TO SEE HOW THE SOLUTION LOOKS LIKE
-				//std::cout << ">>>>>>>>>>>>  TASKS <<<<<<<<<<<<<<" << std::endl;
-				//for (int i = 0; i < _jobs.size(); ++i) 
-				//{
-				//std::cout << cp.domain(task[i])<<std::endl;
-				//}
-				_os=cp.getObjValue();
-				//std::cout << ">>>>>>>>>>>>  UTIL NODES <<<<<<<<<<<<<<" << std::endl;
-				//for (int i = 0; i < _jobs.size(); ++i) 
-				//	for (int j = 0; j < _nodes.size(); j++)
-				//		for(int k=0;k<numberOfJointNodes(_jobs[i],_nodes[j]);k++)
-				//			std::cout << cp.domain(UtilNodes[i][j][k]) <<std::endl;
-				//std::cout << ">>>>>>>>>>>>  ENERGIES  <<<<<<<<<<<<<<" << std::endl;
-				//for (int j = 0; j < _nodes.size(); j++)
-				//	std::cout << "Node consumed energy " <<j<<" - " << cp.getValue(node_consumed_energies[j]) << "  " << std::endl;
-				std::cout << ">>>>>>>>>>>>>>>> Job Energies <<<<<<<<<<<" << std::endl;
+				/* DE-COMMENT THIS TO SEE HOW THE SOLUTION LOOKS LIKE
 				for (int i = 0; i < _jobs.size(); ++i) 
-						std::cout << "Job Energy [" <<i<<"] - " << cp.getValue(jobEnergies[i]) << "  " << std::endl; 
+				{
+				std::cout << cp.domain(task[i])<<std::endl;
+				}*/
+				_os=cp.getObjValue();
+			
 			}
 			if(solved)
 			{
-				_minutesOfExecution=_minTime;
 				for(int i=0;i<_jobs.size();i++)
 				{
 					std::vector<int> nodes(_nodes.size(),0);

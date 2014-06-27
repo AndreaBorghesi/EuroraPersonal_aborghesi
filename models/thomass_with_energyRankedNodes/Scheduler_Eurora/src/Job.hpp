@@ -26,7 +26,7 @@ class Job
 
 		 int _start;
 		 double _lastMakespan;
-		 bool _makespanPresent;
+		 bool _makespanPresent;x
 
 		 bool _schedulato;
 		 std::vector<int> _usedNodes;
