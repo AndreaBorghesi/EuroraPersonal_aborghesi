@@ -40,6 +40,7 @@ public:
 	 * @brief Post method; the constraints enforces consistency on ranges and performedness
 	 */
 	void Post(){
+		cout << "Inside Post() \n" << endl;
 		// when the outer interval gets bounded
 		outerInterval_->WhenPerformedBound(MakeConstraintDemon0(solver(), this,
 					&AlternativeConstraint::PropagateOuterToInner_Perf, "o2i_Bound"));
@@ -47,24 +48,29 @@ public:
 		for(int i = 0; i < innerIntervals_.size(); i++)
 			innerIntervals_[i]->WhenPerformedBound(MakeConstraintDemon1(solver(), this,
 						&AlternativeConstraint::PropagateInnerToOuter_Perf, "i2o_Bound",i));
-
-		// when the range of the outer interval changes -- is this really needed?
-		//outerInterval_->WhenRange(MakeConstraintDemon0(solver(), this,
-		//			&AlternativeConstraint::PropagateOuterToInner_Range, "o2i_Range"));
+                // when the range of the outer interval changes
+		outerInterval_->WhenStartRange(MakeConstraintDemon0(solver(), this,
+					&AlternativeConstraint::PropagateOuterToInner_Range, "o2i_StartRange"));
+		outerInterval_->WhenEndRange(MakeConstraintDemon0(solver(), this,
+					&AlternativeConstraint::PropagateOuterToInner_Range, "o2i_EndRange"));
 		// when the range of one of the inner intervals changes
 		for(int i = 0; i < innerIntervals_.size(); i++){
 			innerIntervals_[i]->WhenStartRange(MakeConstraintDemon1(solver(), this,
-						&AlternativeConstraint::PropagateInnerToOuter_Range, "i20_Range",i));
+						&AlternativeConstraint::PropagateInnerToOuter_Range, "i20_StartRange",i));
 			innerIntervals_[i]->WhenEndRange(MakeConstraintDemon1(solver(), this,
-						&AlternativeConstraint::PropagateInnerToOuter_Range, "i20_Range",i));
+						&AlternativeConstraint::PropagateInnerToOuter_Range, "i20_EndRange",i));
 		}
 
 	}
 
 
 	void PropagateOuterToInner_Perf(){
+
+		cout << "Inside PropagateOuterToInner_Perf \n" << endl;
 		if(!outerInterval_->MayBePerformed()){  // if the outer interval is not performed no inner interval can be performed
-			nM_.Value(0);
+
+			cout << "Inside PropagateOuterToInner_Perf - outer must not be performed \n" << endl;
+			nM_.SetValue(solver(),0);
 			for(int i = 0; i<innerIntervals_.size(); i++){
 				innerIntervals_[i]->SetPerformed(false);
 				innerIntervals_[i]->SetPerformed(false);
@@ -81,53 +87,82 @@ public:
 
         
 	void PropagateInnerToOuter_Perf(int intervalIndex){
-		// update the constraint inner counter depending of the "performedness" of the considered inner interval
-		if(innerIntervals_[intervalIndex]->MustBePerformed())
-			nM_.SetValue(nM_.Value()+1);
-		if(!innerIntervals_[intervalIndex]->MayBePerformed())
-			nC_.SetValue(nC_.Value()+1);
 
-		if(nM_.Value()==subUnitsNumber_){ 
-			// we reached the number of inner intervals to be performed: the remaining must be unperformed
-			for
+		cout << "Inside PropagateInnerToOuter_Perf \n" << endl;
+		cout << "outerInterval_ " << outerInterval_ <<" \n" << endl;
 
+		cout << "nM_ " << nM_.Value() <<" \n" << endl;
+		cout << "nC_ " << nC_.Value() <<" \n" << endl;
+
+
+		cout << "intervalIndex " << intervalIndex <<" \n" << endl;
+
+
+		// if the outer interval may not be performed then there's no point in checking the inner intervals
+		if(outerInterval_->MayBePerformed()){
+			// update the constraint inner counter depending of the "performedness" of the considered inner interval
+			if(innerIntervals_[intervalIndex]->MustBePerformed()){
+				nM_.SetValue(solver(),nM_.Value()+1);
+			}
+			if(!innerIntervals_[intervalIndex]->MayBePerformed()){
+				nC_.SetValue(solver(),nC_.Value()+1);
+			}
+
+			if(nM_.Value()==subUnitsNumber_){ 
+				// we reached the number of inner intervals to be performed: the remaining must be unperformed
+				for(int i = 0; i<innerIntervals_.size(); i++)
+						if(i!=intervalIndex && innerIntervals_[i]->MayBePerformed())
+							innerIntervals_[i]->SetPerformed(false);
+			}
+
+			if(nM_.Value()>subUnitsNumber_)  // too many inner intervals required -> constraint fails
+				solver()->Fail();
+
+			if(nM_.Value()>0){  // at least one inner interval (and thus the outer one) must be performed
+				if(innerIntervals_.size()-nC_.Value()<subUnitsNumber_)  // too few inner intervals may be executed -> constraint fails
+					solver()->Fail();
+				if(innerIntervals_.size()-nC_.Value()==subUnitsNumber_){ 
+				// we reached the number of inner intervals not to be performed: the remaining must be performed
+					for(int i = 0; i<innerIntervals_.size(); i++)
+						if(i!=intervalIndex && innerIntervals_[i]->MayBePerformed())
+							innerIntervals_[i]->SetPerformed(true);
+				}	
+
+			}
+
+			// if no inner interval must be perfomed then neither the outer one has to
+			if(nM_.Value()==0 && nC_.Value()==innerIntervals_.size()){
+				outerInterval_->SetPerformed(false);
+				outerInterval_->SetPerformed(false);
+			}
+			else if(nM_.Value()>0){ // if the outer interval needs to be performed
+				outerInterval_->SetPerformed(true);
+				outerInterval_->SetPerformed(true);
+			}
+
+
+			cout << "outerInterval_ " << outerInterval_ <<" \n" << endl;
+
+			cout << "nM_ " << nM_.Value() <<" \n" << endl;
+			cout << "nC_ " << nC_.Value() <<" \n" << endl;
+
+			// if a new inner interval gets bounded should also check the new ranges for the outer interval
+			PropagateInnerToOuter_Range(intervalIndex);
 		}
-
-		if(nM_.Value()>subUnitsNumber_)  // too many inner intervals required -> constraint fails
-			fail
-
-		if(nM_.Value()>0){  // at least one inner interval (and thus the outer one) must be performed
-			if(innerIntervals_.size()-nC_.Value()<subUnitsNumber_)  // too few inner intervals may be executed -> constraint fails
-				fails
-	                if(innerIntervals_.size()-nC_.Value()==<subUnitsNumber_){ 
-			// we reached the number of inner intervals not to be performed: the remaining must be performed
-
-			}	
-
-		}
-
-		// if no inner interval must be perfomed then neither the outer one has to
-		if(nM_.Value()==0){
-			outerInterval_->SetPerformed(false);
-			outerInterval_->SetPerformed(false);
-		}
-		else{ // if the outer interval needs to be performed
-			outerInterval_->SetPerformed(true);
-			outerInterval_->SetPerformed(true);
-		}
-
-		// if a new inner interval gets bounded should also check the new ranges for the outer interval
-		PropagateInnerToOuter_Range(intervalIndex);
 	}
 
 	void PropagateOuterToInner_Range(){
-		for(int i = 0; i<innerIntervals_.size(); i++){
-			innerIntervals_[i]->SetStartMin(outerInterval_->StartMin());
-			innerIntervals_[i]->SetEndMax(outerInterval_->EndMax());
+		cout << "Inside PropagateOuterToInner_Range \n" << endl;
+		if(outerInterval_->MayBePerformed()){
+			for(int i = 0; i<innerIntervals_.size(); i++){
+				innerIntervals_[i]->SetStartMin(outerInterval_->StartMin());
+				innerIntervals_[i]->SetEndMax(outerInterval_->EndMax());
+			}
 		}
 	}
 
 	void PropagateInnerToOuter_Range(int intervalIndex){
+		cout << "Inside PropagateInnerToOuter_Range \n" << endl;
 		// the outer interval domain is the union of the (performed) inner intervals domains
 		int maxEnd, minStart;
 		if(innerIntervals_[intervalIndex]->MustBePerformed()){  // if the interval changed must still be performed
@@ -168,8 +203,11 @@ public:
 			if(innerIntervals_[i]->MayBePerformed())
 				notToBePerformed++;
 		}
-                nM_.SetValue(solver(),toBePerformed);
-		nC_.SetValue(solver(),notToBePerformed);
+                //nM_.SetValue(solver(),toBePerformed);
+		//nC_.SetValue(solver(),notToBePerformed);
+
+		nM_.SetValue(solver(),0);
+		nC_.SetValue(solver(),0);
 
 		for(int i = 0; i<innerIntervals_.size(); i++){
 			PropagateInnerToOuter_Perf(i);

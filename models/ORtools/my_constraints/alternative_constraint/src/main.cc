@@ -58,15 +58,15 @@ using namespace std;
         /* fixed inner intervals */
         innerIntervals[0]->SetStartMin(0);
         innerIntervals[0]->SetEndMax(HORIZON);
-	innerIntervals[0]->SetPerformed(false);
+	//innerIntervals[0]->SetPerformed(false);
 
 	innerIntervals[1]->SetStartMin(4);
         innerIntervals[1]->SetEndMax(18);
-	innerIntervals[1]->SetPerformed(true);
+	//innerIntervals[1]->SetPerformed(true);
 
 	innerIntervals[2]->SetStartMin(7);
         innerIntervals[2]->SetEndMax(19);
-	innerIntervals[2]->SetPerformed(true);
+	//innerIntervals[2]->SetPerformed(true);
 
 	innerIntervals[3]->SetStartMin(8);
         innerIntervals[3]->SetEndMax(18);
@@ -126,8 +126,16 @@ using namespace std;
 	
 
 	innerIntervals[1]->SetStartMin(5);
-        cout << "Constraint after range change: " << cst << endl;	
-        
+        cout << "Constraint after range change: " << cst << "\n" << endl;	
+
+	outerInterval->SetStartMin(6);
+        cout << "Constraint after changing outer interval range: " << cst << "\n" << endl;
+
+	innerIntervals[0]->SetPerformed(true);
+        cout << "Constraint after infeasible interval performedness change: " << cst << "\n" << endl;
+
+	outerInterval->SetPerformed(false);
+        cout << "Constraint after forcing outer interval not to be performed: " << cst << "\n" << endl;
         
         return 0;        
     }
