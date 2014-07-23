@@ -7,13 +7,13 @@ import datetime
 
 class Job():
     def __init__ (self,jobId,jobName,userName,queue,startTime,jobResources,runStartTime,endTime,nodeReq,cpuReq,memReq,timeReq,deleted,dependency,exitStatus):
-        self.jobId = jobId
-        self.jobName = jobName
-        self.userName = userName
-        self.queue = queue
-        self.startTime = startTime
+        self.jobId = jobId                          # job identifier (string) 
+        self.jobName = jobName                      # job name (string)
+        self.userName = userName                    # user name -- who launches the job (string)
+        self.queue = queue                          # the queue in which a job belongs (string)
+        self.startTime = startTime                  # when a job enters in the queue (string)
 
-        self.jobResources = jobResources
+        self.jobResources = jobResources            # resources used by a job --> job sub-sets
         job_resources = self.jobResources.split('#')
         resources_temp = []
         for job_res in job_resources:
@@ -31,21 +31,22 @@ class Job():
             gpu_used += int(r[2])
             mic_used += int(r[3])
             mem_used += int(r[4])
-        self.nNodes = nodes_used
-        self.nCores = cores_used
-        self.nGpus = gpu_used
-        self.nMics = mic_used
-        self.memUsed = mem_used
-        self.runStartTime = runStartTime
-        self.endTime = endTime
+        self.nNodes = nodes_used                    # number of nodes used --> numbers of sub-jobs (string)
+        self.nCores = cores_used                    # number of cores actually used on a specific node (string)
+        self.nGpus = gpu_used                       # number of gpus actually used on a specific node (string)
+        self.nMics = mic_used                       # number of mics actually used on a specific node (string)
+        self.memUsed = mem_used                     # amount of memory s actually used on a specific node (string)
 
-        self.nodeReq = int(nodeReq)
-        self.cpuReq = int(cpuReq)
-        self.memReq = int(memReq)*1024*1024
-        self.timeReq = timeReq
-        self.deleted = deleted
-        self.dependency = dependency
-        self.exitStatus = exitStatus
+        self.runStartTime = runStartTime            # when a job begins its execution (string)
+        self.endTime = endTime                      # when a job terminates (string)
+
+        self.nodeReq = int(nodeReq)                 # number of nodes REQUESTED by the user (int)
+        self.cpuReq = int(cpuReq)                   # number of cores REQUESTED by the user (int)
+        self.memReq = int(memReq)*1024*1024         # amount of memory REQUESTED by the user (int)
+        self.timeReq = timeReq                      # completion time estimated by the user (string)
+        self.deleted = deleted                      # a job could be deleted before its completion (string)
+        self.dependency = dependency                # job possible dependecies (string)
+        self.exitStatus = exitStatus                # exit status (string)
 
         self.startTime_asDate = datetime.datetime.strptime(startTime,"%Y-%m-%d %H:%M:%S")
         self.endTime_asDate = datetime.datetime.strptime(endTime,"%Y-%m-%d %H:%M:%S")
@@ -55,10 +56,9 @@ class Job():
         self.timeReq_asTime = datetime.timedelta(hours=int(hhmm[0]),minutes=int(hhmm[1]))
 
         self.isScheduled = 0
-        self.actualStart = 0  # the run start time computed by our scheduler
         self.usedNodes = []   # a vector with NNodes element, 1 if a job uses that node, 0 if it does not
         for i in range(NNODE):
-            self.usedNodes[i]=0
+            self.usedNodes.append(0)
 
     
     def getDuration_asTime (self, atTime):
@@ -68,24 +68,23 @@ class Job():
 
 
     def getDuration_asInt (self, atTime):
-        return (self.getDuration_asTime(atTime)).total_seconds()
+        return int((self.getDuration_asTime(atTime)).total_seconds())
 
     
     def getStart_asInt(self, atTime):
-        return (self.startTime_asDate - atTime).total_seconds()
+        return int((self.startTime_asDate - atTime).total_seconds())
 
         
     def getEnd_asInt(self, atTime):
-        return (self.endTime_asDate - atTime).total_seconds()
+        return int((self.endTime_asDate - atTime).total_seconds())
 
 
     def getRunStart_asInt(self, atTime):
-        return (self.runStartTime_asDate - atTime).total_seconds()
+        return int((self.runStartTime_asDate - atTime).total_seconds())
 
 
-    ''' Actual node allocation for scheduled jobs '''
-    def allocate(self,start,nodes):
-        self.start = start
+    # Actual node allocation for scheduled jobs 
+    def allocate(self,nodes):
         self.usedNodes = nodes
 
 
@@ -103,7 +102,7 @@ class JobReader():
         self.jobs = {}
 
     def readJobs(self, nodesFile):
-        " Read nodes properties "
+        # Read nodes properties 
         with open(nodesFile,'r') as f:
             i = 0
             for line in f:

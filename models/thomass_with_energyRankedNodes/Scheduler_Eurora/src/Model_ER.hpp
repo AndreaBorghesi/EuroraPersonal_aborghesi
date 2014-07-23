@@ -155,7 +155,7 @@ inline JobArray Model_ER::solve(int refTime)
 			for (int j = 0; j < _nodes.size(); j++) {
 				usgCores.add(IloCumulFunctionExpr(env));
 				for (int i = 0; i < _jobs.size(); ++i) {
-					for(int k=0;k<numberOfJointNodes(_jobs[i],_nodes[j]);k++)
+					for(int k=gi:	0;k<numberOfJointNodes(_jobs[i],_nodes[j]);k++)
 					{
 						usgCores[j] += IloPulse(UtilNodes[i][j][k], _jobs[i].getNumberOfCores()/_jobs[i].getNumberOfNodes());
 					}

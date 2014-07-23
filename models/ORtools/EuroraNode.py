@@ -19,7 +19,7 @@ class Node():
         self.energyCPUbound = 0
 
     def humanPrintNode (self):
-        outstr = "Node: " + str(self.nNode) + " -- N.Cores: " + str(self.nCores) + " - N.Gpus: " + str(self.nGpus) + " - N.Mics: " + str(self.nMics) + " - Mem: " + str(self.mem) + " - Reserved: " + str(self.reserved) + " - Nom.Freq: " + str(self.nominalFrequency) + " - R.FreqMEM: " + str(self.rFreqMEMbound) + " - R.FreqCPU: " + str(self.rFreqCPUbound) + " - EnergyMEM: " + str(self.energyMEMbound) + " - EnergyCPU: " + str(self.energyCPUbound)
+        outstr = "Node: " + str(self.nNodes) + " -- N.Cores: " + str(self.nCores) + " - N.Gpus: " + str(self.nGpus) + " - N.Mics: " + str(self.nMics) + " - Mem: " + str(self.mem) + " - Reserved: " + str(self.reserved) + " - Nom.Freq: " + str(self.nominalFrequency) + " - R.FreqMEM: " + str(self.rFreqMEMbound) + " - R.FreqCPU: " + str(self.rFreqCPUbound) + " - EnergyMEM: " + str(self.energyMEMbound) + " - EnergyCPU: " + str(self.energyCPUbound)
         return outstr
 
 ''' Class to read from files info about nodes '''
@@ -30,12 +30,10 @@ class NodeReader():
     def readNodes(self, nodesFile):
         " Read nodes properties "
         with open(nodesFile,'r') as f:
-            i = 0
             for line in f:
                 data = line.split()
                 n = Node(int(data[0]),int(data[1]),int(data[2]),int(data[3]),int(data[4]),int(data[5]))
-                self.nodes[i] = n
-                i+=1
+                self.nodes[data[0]] = n
 
     def updateNodes(self, nomFreqFile, rFreqMEMFile, rFreqCPUFile, energyMEMFile, energyCPUFile):
         " Read node info about energies "
