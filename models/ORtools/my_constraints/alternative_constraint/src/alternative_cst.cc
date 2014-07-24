@@ -77,11 +77,38 @@ public:
 			}
 		}
 		else if(outerInterval_->MustBePerformed()){  // if the outer interval must be performed then exactly subUnitsNumber_ inner intervals must be performed
-			std::vector<IntVar*> performedExpressions;
-			for(int i = 0; i<innerIntervals_.size(); i++)
-				performedExpressions.push_back(innerIntervals_[i]->PerformedExpr()->Var());
-			//solver->SumEqual(performedExpressions,subUnitsNumber_);
-			
+			if(nM_.Value()==subUnitsNumber_){ 
+				// we reached the number of inner intervals to be performed: the remaining must be unperformed
+				for(int i = 0; i<innerIntervals_.size(); i++)
+						if(innerIntervals_[i]->MayBePerformed())
+							innerIntervals_[i]->SetPerformed(false);
+			}
+			if(innerIntervals_.size()-nC_.Value()==subUnitsNumber_){ 
+				// we reached the number of inner intervals not to be performed: the remaining must be performed
+					for(int i = 0; i<innerIntervals_.size(); i++)
+						if(innerIntervals_[i]->MayBePerformed())
+							innerIntervals_[i]->SetPerformed(true);
+			}
+			// if the overall situation is not fixed yet, we force to perform the needed number of inner intervals
+			int n_intervalsToSet = nM_.Value(); // the number of inner intervals set so far --> we need to set exactly subUnitsNumber
+			int i = 0;
+
+			cout << "Inside PropagateOuterToInner_Perf - n_intervalsToSet " << n_intervalsToSet << "\n" << endl;
+                        while(n_intervalsToSet < subUnitsNumber_){
+				// we set as performed the first undecided innner intervals we encounter
+				// we follow the order of the interval variables declaration
+				if(!innerIntervals_[i]->IsPerformedBound())
+					innerIntervals_[i]->SetPerformed(true);
+				i++;
+				n_intervalsToSet++;
+			}
+			cout << "Inside PropagateOuterToInner_Perf - n_intervalsToSet " << n_intervalsToSet << "\n" << endl;
+			// the remaining undecided innner intervals are forced not to be performed
+			while(i<innerIntervals_.size()){
+				if(!innerIntervals_[i]->IsPerformedBound())
+					innerIntervals_[i]->SetPerformed(false);
+				i++;
+			}
 		}
 	}
 

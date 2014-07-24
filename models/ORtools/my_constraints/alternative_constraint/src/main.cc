@@ -36,7 +36,7 @@ using namespace std;
     // Alternative Constraint
     //
     
-    int test_alternative()
+    int test_alternative_inner_range()
     {
 
         /* build the solver */
@@ -58,15 +58,15 @@ using namespace std;
         /* fixed inner intervals */
         innerIntervals[0]->SetStartMin(0);
         innerIntervals[0]->SetEndMax(HORIZON);
-	//innerIntervals[0]->SetPerformed(false);
+	innerIntervals[0]->SetPerformed(false);
 
 	innerIntervals[1]->SetStartMin(4);
         innerIntervals[1]->SetEndMax(18);
-	//innerIntervals[1]->SetPerformed(true);
+	innerIntervals[1]->SetPerformed(true);
 
 	innerIntervals[2]->SetStartMin(7);
         innerIntervals[2]->SetEndMax(19);
-	//innerIntervals[2]->SetPerformed(true);
+	innerIntervals[2]->SetPerformed(true);
 
 	innerIntervals[3]->SetStartMin(8);
         innerIntervals[3]->SetEndMax(18);
@@ -74,30 +74,6 @@ using namespace std;
 
 	innerIntervals[4]->SetStartMin(1);
         innerIntervals[4]->SetEndMax(11);
-
-
-	/* fixed outer interval */
-        //outerInterval->SetStartMin(1);
-	//outerInterval->SetEndMax(15);
-	//outerInterval->SetPerformed(true);
-	//
-        //innerIntervals[0]->SetStartMin(0);
-        //innerIntervals[0]->SetEndMax(HORIZON);
-
-	//innerIntervals[1]->SetStartMin(4);
-        //innerIntervals[1]->SetEndMax(18);
-
-	//innerIntervals[2]->SetStartMin(7);
-        //innerIntervals[2]->SetEndMax(19);
-
-	//innerIntervals[3]->SetStartMin(8);
-        //innerIntervals[3]->SetEndMax(18);
-
-	//innerIntervals[4]->SetStartMin(1);
-        //innerIntervals[4]->SetEndMax(11);
-
-
-
 
         /* build alternative constraint */
         Constraint* cst = MakeAlternativeConstraint(&solver, outerInterval, innerIntervals, subUnitsNumber);
@@ -128,14 +104,66 @@ using namespace std;
 	innerIntervals[1]->SetStartMin(5);
         cout << "Constraint after range change: " << cst << "\n" << endl;	
 
-	outerInterval->SetStartMin(6);
-        cout << "Constraint after changing outer interval range: " << cst << "\n" << endl;
-
 	innerIntervals[0]->SetPerformed(true);
         cout << "Constraint after infeasible interval performedness change: " << cst << "\n" << endl;
 
-	outerInterval->SetPerformed(false);
-        cout << "Constraint after forcing outer interval not to be performed: " << cst << "\n" << endl;
+        return 0;        
+    }
+
+
+int test_alternative_outer_range_notPerf()
+    {
+
+        /* build the solver */
+        Solver solver("Test alternative constraint");
+
+        /* build variables  */
+	IntervalVar* const outerInterval = solver.MakeFixedDurationIntervalVar(0,HORIZON,DURATION,true,"Outer_Interval");
+
+	std::vector<IntervalVar*> innerIntervals;
+	for(int i = 0; i<=4; i++){
+		const std::string name = StringPrintf("Inner_Interval_%d", i);
+		IntervalVar* const innerInterval = solver.MakeFixedDurationIntervalVar(0,HORIZON,DURATION,true,name);
+		innerIntervals.push_back(innerInterval);
+	}
+
+	int subUnitsNumber = 2;
+
+
+        /* fixed inner intervals */
+        innerIntervals[0]->SetStartMin(0);
+        innerIntervals[0]->SetEndMax(HORIZON);
+
+	innerIntervals[1]->SetStartMin(4);
+        innerIntervals[1]->SetEndMax(18);
+	innerIntervals[1]->SetPerformed(true);
+
+	innerIntervals[2]->SetStartMin(7);
+        innerIntervals[2]->SetEndMax(19);
+
+	innerIntervals[3]->SetStartMin(8);
+        innerIntervals[3]->SetEndMax(18);
+
+	innerIntervals[4]->SetStartMin(1);
+        innerIntervals[4]->SetEndMax(11);
+
+        /* build alternative constraint */
+        Constraint* cst = MakeAlternativeConstraint(&solver, outerInterval, innerIntervals, subUnitsNumber);
+
+        solver.AddConstraint(cst);
+        cout << "Initial constraint status: " << cst << "\n" << endl;
+        
+        /* propagate the alternative constraint */
+        cst->PostAndPropagate();
+        cout << "Constraint after propagation: " << cst << "\n" << endl;	
+        
+	outerInterval->SetStartMin(6);
+        cout << "Constraint after changing outer interval range: " << cst << "\n" << endl;
+
+	//outerInterval->SetPerformed(false);
+        //cout << "Constraint after forcing outer interval not to be performed: " << cst << "\n" << endl;
+        outerInterval->SetPerformed(true);
+        cout << "Constraint after forcing outer interval to be performed: " << cst << "\n" << endl;
         
         return 0;        
     }
@@ -145,7 +173,10 @@ int main(int argc, char **argv)
 {
 	int result;
 
-	result = test_alternative();	
-	    
+        //cout << " -------------------- Test alternative inner range --------------\n" << endl;
+	//result = test_alternative_inner_range();
+	cout << " -------------------- Test outer range and performedness --------------\n" << endl;
+	result = test_alternative_outer_range_notPerf();
+   
 	return 0;
 }
