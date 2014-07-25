@@ -69,13 +69,11 @@ CFLAGS += -Iinclude
 CFLAGS += -I$(OR_TOOLS_BASE)/src
 # add search path for gflags
 CFLAGS += -I$(DEPENDENCIES_INC)
+CFLAGS += -I$(OR_TOOLS_BASE)/src/gen
 
 # Linker flags
 # add constraint solver libraries
-LDFLAGS := -fPIC -std=c++0x -O4 -DNDEBUG
-LDFLAGS += -DARCH_K8 -Idependencies/sources/TinyThread++-1.1/source -Wno-deprecated
 LDFLAGS += -Wl,-rpath $(OR_TOOLS_BASE)/lib -L$(OR_TOOLS_BASE)/lib
-LDFLAGS += -DUSE_CBC -DUSE_CLP 
 LDFLAGS += -lconstraint_solver
 LDFLAGS += -Wl,-rpath $(OR_TOOLS_BASE)/lib -L$(OR_TOOLS_BASE)/lib
 LDFLAGS += -lsat 
@@ -98,12 +96,15 @@ LDFLAGS += -lgflags -lz
 LDFLAGS += -Wl,-rpath $(OR_TOOLS_BASE)/lib -L$(OR_TOOLS_BASE)/dependencies/install/lib
 LDFLAGS += -lprotobuf -lpthread -lrt -lpthread
 LDFLAGS += -L$(PYNC_FOLDER)
+LDFLAGS += -Wl,-rpath $(PYNC_FOLDER)
+LDFLAGS += -Wl,-rpath $(OR_TOOLS_BASE)/src/constraint_solver
 
 # ld flags for libraries (most of this stuff is OSX specific)
-#LDFLAGS_LIB := -arch x86_64 -flat_namespace -undefined suppress
-##LDFLAGS_LIB += -macosx_version_min 10.6 -lSystem -compatibility_version 1.0
-#LDFLAGS_LIB += -current_version 1.0.0
-#LDFLAGS_LIB += $(LDFLAGS) 
+#LDFLAGS_LIB_SWIG := -arch x86_64 -flat_namespace -undefined suppress
+#LDFLAGS_LIB_SWIG += -macosx_version_min 10.6 -lSystem -compatibility_version 1.0
+#LDFLAGS_LIB_SWIG += -current_version 1.0.0
+#LDFLAGS_LIB_SWIG := -L$(PYNC_FOLDER)
+LDFLAGS_LIB := $(LDFLAGS) 
 
 # path of the SWIG binary
 SWIG_BINARY := $(OR_TOOLS_BASE)/dependencies/install/bin/swig
@@ -148,7 +149,8 @@ $(PYNC_FOLDER)/pywrapcp_acst.o: $(PYNC_FOLDER)/pywrapcp_acst.cc
 	$(CCC) $(CFLAGS) $(PYTHON_INC) -c $(PYNC_FOLDER)/pywrapcp_acst.cc -o $(PYNC_FOLDER)/pywrapcp_acst.o
 
 _pywrapcp_acst.so: $(PYNC_FOLDER)/pywrapcp_acst.o $(OUT_FOLDER)/alternative_cst.o
-	$(LD) -bundle $(LDFLAGS_LIB) -lalternative_cst -o _pywrapcp_acst.so $(PYNC_FOLDER)/pywrapcp_acst.o
+	#$(LD) -bundle $(LDFLAGS_LIB_SWIG) $(PYNC_FOLDER)/pywrapcp_acst.o -lalternative_cst -o _pywrapcp_acst.so   
+	$(CCC) -shared  $(PYNC_FOLDER)/pywrapcp_acst.o -lalternative_cst -o _pywrapcp_acst.so $(LDFLAGS_LIB)
 	mv $(PYNC_FOLDER)/pywrapcp_acst.py .
 
 

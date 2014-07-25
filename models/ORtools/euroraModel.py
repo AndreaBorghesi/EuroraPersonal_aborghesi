@@ -199,7 +199,7 @@ def main(unused_argv):
     # -----  Model  -----
 
 
-    solver = pywrapcp.Solver('MOdel')
+    solver = pywrapcp.Solver('Model')
 
 
     #  Task variable, one for each job
