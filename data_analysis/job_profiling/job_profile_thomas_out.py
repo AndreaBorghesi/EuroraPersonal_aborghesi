@@ -102,8 +102,8 @@ for line in iter(status.stdout.readline,''):
 #        time_req_as_delta = datetime.timedelta(hours=int(hhmmss[0],minutes=int(hhmmss[1]),seconds=int(hhmmss[2])))
     #print time_req_as_delta
 
-    if(start_time + time_req_as_delta < end_time):
-        end_time = start_time + time_req_as_delta
+    if(run_start_time + time_req_as_delta < end_time):
+        end_time = run_start_time + time_req_as_delta
         print job_id_string
     print "END TIME " + str(end_time)
 

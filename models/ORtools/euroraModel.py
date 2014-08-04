@@ -1,6 +1,26 @@
+#!/usr/bin/env python
+
+# Copyright 2014 Andrea Borghesi <andre.borghesi3@unibo.it>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 from google.apputils import app
 import gflags
-from ortools.constraint_solver import pywrapcp
+#from ortools.constraint_solver import pywrapcp
+#from .my_constraints.alternative_constraint import pywrapcp_acst as pycp
+#import my_constraints.alternative_constraint.pywrapcp_acst as pycp
+import pywrapcp_acst as pycp
 import EuroraNode
 from EuroraJob import Job
 import EuroraJob
@@ -19,20 +39,6 @@ gflags.DEFINE_string('rFreqMEMFile', 'data/RFreq_Mem_Bound.logprocessed', 'path 
 gflags.DEFINE_string('rFreqCPUFile', 'data/RFreq_CPU_Bound.logprocessed', 'path to data file')
 gflags.DEFINE_string('energyMEMFile', 'data/Energy_Mem_Bound.logprocessed', 'path to data file')
 gflags.DEFINE_string('energyCPUFile', 'data/Energy_CPU_Bound.logprocessed', 'path to data file')
-
-
-def AlternativeConstraint(solver,outerInterval,intervals,n):
-    pass
-    outerInterval.SetStartMin(min([interval.StartMin() for interval in intervals]))
-    outerInterval.SetEndMax(min([interval.EndMax() for interval in intervals]))
-    ##solver.Add(solver.SumEquality([interval.PerformedExpr().Min() for interval in intervals], n * outerInterval.PerformedExpr().Min()))
-
-    #solver.Add(solver.IsEqualCstVar(solver.Sum([interval.PerformedExpr().Var() for interval in intervals]), n * outerInterval.PerformedExpr().Var()))
-
-    #print [interval.PerformedExpr().Var().Min() for interval in intervals]
-    #print intervals
-    #print str(n * outerInterval.PerformedExpr().Var().Min())
-
 
 
 ''' Compute the minumum number of nodes needed by a job, considering its requests '''

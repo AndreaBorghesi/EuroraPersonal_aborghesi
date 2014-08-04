@@ -23,148 +23,195 @@
 using namespace operations_research;
 using namespace std;
 
-#define HORIZON 20
-#define DURATION 10
+#define HORIZON 100
 
 //==============================================================================
 // Main program
 //==============================================================================
-
-
     
     //
     // Alternative Constraint
     //
     
-    int test_alternative_inner_range()
+
+int test_alternative()
     {
 
         /* build the solver */
         Solver solver("Test alternative constraint");
 
         /* build variables  */
-	IntervalVar* const outerInterval = solver.MakeFixedDurationIntervalVar(0,HORIZON,DURATION,true,"Outer_Interval");
-
-	std::vector<IntervalVar*> innerIntervals;
-	for(int i = 0; i<=4; i++){
-		const std::string name = StringPrintf("Inner_Interval_%d", i);
-		IntervalVar* const innerInterval = solver.MakeFixedDurationIntervalVar(0,HORIZON,DURATION,true,name);
-		innerIntervals.push_back(innerInterval);
+	IntervalVar* const tasks0 = solver.MakeFixedDurationIntervalVar(0,HORIZON,20,true,"Task_0");
+	IntervalVar* const tasks1 = solver.MakeFixedDurationIntervalVar(0,HORIZON,40,true,"Task_1");
+	IntervalVar* const tasks2 = solver.MakeFixedDurationIntervalVar(20,HORIZON,50,true,"Task_2");
+	std::vector<IntervalVar*> innerIntervals0;
+	for(int i = 0; i<3; i++){
+		const std::string name = StringPrintf("Inner_Interval_0_%d", i);
+		IntervalVar* const innerInterval = solver.MakeFixedDurationIntervalVar(0,HORIZON,20,true,name);
+		innerIntervals0.push_back(innerInterval);
 	}
+	std::vector<IntervalVar*> innerIntervals1;
+	for(int i = 0; i<6; i++){
+		const std::string name = StringPrintf("Inner_Interval_1_%d", i);
+		IntervalVar* const innerInterval = solver.MakeFixedDurationIntervalVar(0,HORIZON,40,true,name);
+		innerIntervals1.push_back(innerInterval);
+	}
+	std::vector<IntervalVar*> innerIntervals2;
+	for(int i = 0; i<4; i++){
+		const std::string name = StringPrintf("Inner_Interval_2_%d", i);
+		IntervalVar* const innerInterval = solver.MakeFixedDurationIntervalVar(20,HORIZON,50,true,name);
+		innerIntervals2.push_back(innerInterval);
+	}
+	int subUnitsNumber0 = 1;
+	int subUnitsNumber1 = 4;
+	int subUnitsNumber2 = 2;
 
-	int subUnitsNumber = 2;
+	/* build alternative constraint */
+        Constraint* cst0 = MakeAlternativeConstraint(&solver, tasks0, innerIntervals0, subUnitsNumber0);
+        solver.AddConstraint(cst0);
+	Constraint* cst1 = MakeAlternativeConstraint(&solver, tasks1, innerIntervals1, subUnitsNumber1);
+	solver.AddConstraint(cst1);
+	Constraint* cst2 = MakeAlternativeConstraint(&solver, tasks2, innerIntervals2, subUnitsNumber2);
+        solver.AddConstraint(cst2);
 
 
-        /* fixed inner intervals */
-        innerIntervals[0]->SetStartMin(0);
-        innerIntervals[0]->SetEndMax(HORIZON);
-	innerIntervals[0]->SetPerformed(false);
+        cout << "Constraint 0, initial status: " << cst0 << "\n" << endl;
+        cout << "Constraint 1, initial status: " << cst1 << "\n" << endl;
+        cout << "Constraint 2, initial status: " << cst2 << "\n" << endl;
 
-	innerIntervals[1]->SetStartMin(4);
-        innerIntervals[1]->SetEndMax(18);
-	innerIntervals[1]->SetPerformed(true);
 
-	innerIntervals[2]->SetStartMin(7);
-        innerIntervals[2]->SetEndMax(19);
-	innerIntervals[2]->SetPerformed(true);
+        /* fixed intervals */
+        tasks0->SetStartMin(10);
+	tasks2->SetEndMax(85);
 
-	innerIntervals[3]->SetStartMin(8);
-        innerIntervals[3]->SetEndMax(18);
-	innerIntervals[3]->SetPerformed(false);
+        innerIntervals0[0]->SetPerformed(false);
+        innerIntervals0[1]->SetStartMin(5);
+        innerIntervals0[2]->SetEndMax(60);
 
-	innerIntervals[4]->SetStartMin(1);
-        innerIntervals[4]->SetEndMax(11);
+	innerIntervals1[0]->SetPerformed(true);
+	innerIntervals1[0]->SetStartMin(20);
+        innerIntervals1[1]->SetPerformed(false);
+	innerIntervals1[1]->SetStartMin(30);
+	innerIntervals1[2]->SetStartMax(40);
+	innerIntervals1[3]->SetEndMax(90);
 
-        /* build alternative constraint */
-        Constraint* cst = MakeAlternativeConstraint(&solver, outerInterval, innerIntervals, subUnitsNumber);
+	innerIntervals2[0]->SetStartMin(25);
+	innerIntervals2[0]->SetPerformed(false);
+        innerIntervals2[3]->SetStartMin(25);
 
-        solver.AddConstraint(cst);
-        cout << "Initial constraint status: " << cst << "\n" << endl;
-        
-        /* propagate the alternative constraint */
-        cst->PostAndPropagate();
-        cout << "Constraint after propagation: " << cst << "\n" << endl;	
-        
-        /* search */
-        //cout << "Outer interval: " << outerInterval << endl;	
-        //cout << "Outer interval min start: " << outerInterval->StartMin() << endl;	
-        //cout << "Outer interval max end: " << outerInterval->EndMax() << endl;	
-        //cout << "Outer interval must be performed: " << outerInterval->MustBePerformed() << endl;	
+	// Creates array of end_times of jobs.
+	std::vector<IntVar*> all_ends;
+	all_ends.push_back(tasks0->EndExpr()->Var());
+	all_ends.push_back(tasks1->EndExpr()->Var());
+	all_ends.push_back(tasks2->EndExpr()->Var());
 
-        //for(int i = 0; i<=4; i++){
-	//	cout << "Inner interval " << i << " : " << innerIntervals[i] << endl;	
-	//	cout << "Inner interval " << i << " must be performed: " << innerIntervals[i]->MustBePerformed() << endl;
-	//	if(innerIntervals[i]->MayBePerformed()){
-	//		cout << "Inner interval " << i << " min start: " << innerIntervals[i]->StartMin() << endl;	
-	//		cout << "Inner interval " << i << " max end: " << innerIntervals[i]->EndMax() << endl;	
-	//	}
-	//}
+	// Create array for all the intervals
+	std::vector<IntervalVar*> all_intervals;
+        all_intervals.push_back(tasks0);
+        all_intervals.push_back(tasks1);
+        all_intervals.push_back(tasks2);
+        all_intervals.push_back(innerIntervals0[0]);
+        all_intervals.push_back(innerIntervals0[1]);
+        all_intervals.push_back(innerIntervals0[2]);
+        all_intervals.push_back(innerIntervals1[0]);
+        all_intervals.push_back(innerIntervals1[1]);
+        all_intervals.push_back(innerIntervals1[2]);
+        all_intervals.push_back(innerIntervals1[3]);
+        all_intervals.push_back(innerIntervals1[4]);
+        all_intervals.push_back(innerIntervals1[5]);
+	all_intervals.push_back(innerIntervals2[0]);
+        all_intervals.push_back(innerIntervals2[1]);
+        all_intervals.push_back(innerIntervals2[2]);
+        all_intervals.push_back(innerIntervals2[3]);
+
+	// Objective: minimize the makespan (maximum end times of all tasks)
+	IntVar* const objective_var = solver.MakeMax(all_ends)->Var();
+	OptimizeVar* const objective_monitor = solver.MakeMinimize(objective_var, 1);
+
+	cout << "objective_var: " << objective_var << "\n" << endl;
+	cout << "objective_monitor: " << objective_monitor << "\n" << endl;
+
+	// ----- Search monitors and decision builder -----
+	DecisionBuilder* const interval_phase = solver.MakePhase(all_intervals, Solver::INTERVAL_DEFAULT);
+
+	DecisionBuilder* const obj_phase = solver.MakePhase(objective_var, Solver::CHOOSE_FIRST_UNBOUND, Solver::ASSIGN_MIN_VALUE);
+
+	DecisionBuilder* const main_phase = solver.Compose(interval_phase, obj_phase);
+
+	// Search log.
+	const int kLogFrequency = 1000000;
+	SearchMonitor* const search_log = solver.MakeSearchLog(kLogFrequency, objective_monitor);
+
+	SearchLimit* limit = NULL;
+	limit = solver.MakeTimeLimit(3000000);
+
+	SolutionCollector* const collector = solver.MakeLastSolutionCollector();
+	collector->Add(all_intervals);
+
+	// Search
+	//if (solver.Solve(main_phase, search_log, objective_monitor, limit,collector))
+	//	cout << "Solution: " << collector->solution(0)->Value(all_intervals) << "\n" << endl;
+	//
 	
-
-	innerIntervals[1]->SetStartMin(5);
-        cout << "Constraint after range change: " << cst << "\n" << endl;	
-
-	innerIntervals[0]->SetPerformed(true);
-        cout << "Constraint after infeasible interval performedness change: " << cst << "\n" << endl;
-
-        return 0;        
-    }
+	solver.NewSearch(main_phase);
+	//cst0->PostAndPropagate();
+	//cst1->PostAndPropagate();
+	//cst2->PostAndPropagate();
+	cout << "Constraint 0, after NewSearch: " << cst0 << "\n" << endl;
+        cout << "Constraint 1, after NewSearch: " << cst1 << "\n" << endl;
+        cout << "Constraint 2, after NewSearch: " << cst2 << "\n" << endl;
 
 
-int test_alternative_outer_range_notPerf()
-    {
+	int solved = 0;
 
-        /* build the solver */
-        Solver solver("Test alternative constraint");
+	while(solver.NextSolution()){
 
-        /* build variables  */
-	IntervalVar* const outerInterval = solver.MakeFixedDurationIntervalVar(0,HORIZON,DURATION,true,"Outer_Interval");
+		solved = 1;
 
-	std::vector<IntervalVar*> innerIntervals;
-	for(int i = 0; i<=4; i++){
-		const std::string name = StringPrintf("Inner_Interval_%d", i);
-		IntervalVar* const innerInterval = solver.MakeFixedDurationIntervalVar(0,HORIZON,DURATION,true,name);
-		innerIntervals.push_back(innerInterval);
+		cout << " ----- Task 0 ----- " << endl;
+		cout << tasks0 << endl;
+		cout << " ----- Task 1 ----- " << endl;
+		cout << tasks1 << endl;
+		cout << " ----- Task 2 ----- " << endl;
+		cout << tasks2 << endl;
+		cout << " ----- Util Node 0 0 ----- " << endl;
+		cout << innerIntervals0[0] << endl;
+		cout << " ----- Util Node 0 1 ----- " << endl;
+		cout << innerIntervals0[1] << endl;
+		cout << " ----- Util Node 0 2 ----- " << endl;
+		cout << innerIntervals0[2] << endl;
+		cout << " ----- Util Node 1 0 ----- " << endl;
+		cout << innerIntervals1[0] << endl;
+		cout << " ----- Util Node 1 1 ----- " << endl;
+		cout << innerIntervals1[1] << endl;
+		cout << " ----- Util Node 1 2 ----- " << endl;
+		cout << innerIntervals1[2] << endl;
+		cout << " ----- Util Node 1 3 ----- " << endl;
+		cout << innerIntervals1[3] << endl;
+		cout << " ----- Util Node 1 4 ----- " << endl;
+		cout << innerIntervals1[4] << endl;
+		cout << " ----- Util Node 1 5 ----- " << endl;
+		cout << innerIntervals1[5] << endl;
+		cout << " ----- Util Node 2 0 ----- " << endl;
+		cout << innerIntervals2[0] << endl;
+		cout << " ----- Util Node 2 1 ----- " << endl;
+		cout << innerIntervals2[1] << endl;
+		cout << " ----- Util Node 2 2 ----- " << endl;
+		cout << innerIntervals2[2] << endl;
+		cout << " ----- Util Node 2 3 ----- " << endl;
+		cout << innerIntervals2[3] << endl;
+
+		cout << "SOLUTION\n" << endl;
+		cout << "objective_var: " << objective_var << "\n" << endl;
+		cout << "objective_monitor: " << objective_monitor << "\n" << endl;
 	}
 
-	int subUnitsNumber = 2;
+	if(!solved)
+		cout << "No Solution found " << endl;
+
+	solver.EndSearch();
 
 
-        /* fixed inner intervals */
-        innerIntervals[0]->SetStartMin(0);
-        innerIntervals[0]->SetEndMax(HORIZON);
-
-	innerIntervals[1]->SetStartMin(4);
-        innerIntervals[1]->SetEndMax(18);
-	innerIntervals[1]->SetPerformed(true);
-
-	innerIntervals[2]->SetStartMin(7);
-        innerIntervals[2]->SetEndMax(19);
-
-	innerIntervals[3]->SetStartMin(8);
-        innerIntervals[3]->SetEndMax(18);
-
-	innerIntervals[4]->SetStartMin(1);
-        innerIntervals[4]->SetEndMax(11);
-
-        /* build alternative constraint */
-        Constraint* cst = MakeAlternativeConstraint(&solver, outerInterval, innerIntervals, subUnitsNumber);
-
-        solver.AddConstraint(cst);
-        cout << "Initial constraint status: " << cst << "\n" << endl;
-        
-        /* propagate the alternative constraint */
-        cst->PostAndPropagate();
-        cout << "Constraint after propagation: " << cst << "\n" << endl;	
-        
-	outerInterval->SetStartMin(6);
-        cout << "Constraint after changing outer interval range: " << cst << "\n" << endl;
-
-	//outerInterval->SetPerformed(false);
-        //cout << "Constraint after forcing outer interval not to be performed: " << cst << "\n" << endl;
-        outerInterval->SetPerformed(true);
-        cout << "Constraint after forcing outer interval to be performed: " << cst << "\n" << endl;
-        
         return 0;        
     }
     
@@ -173,10 +220,8 @@ int main(int argc, char **argv)
 {
 	int result;
 
-        //cout << " -------------------- Test alternative inner range --------------\n" << endl;
-	//result = test_alternative_inner_range();
-	cout << " -------------------- Test outer range and performedness --------------\n" << endl;
-	result = test_alternative_outer_range_notPerf();
+	cout << " -------------------- Test --------------\n" << endl;
+	result = test_alternative();
    
 	return 0;
 }

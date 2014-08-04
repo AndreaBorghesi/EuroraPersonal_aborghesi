@@ -100,8 +100,8 @@ for subdir, dirs, files in os.walk(DIR):
                 hhmm = time_req.split(':')
                 time_req_as_delta = datetime.timedelta(hours=int(hhmm[0]),minutes=int(hhmm[1]))
 
-                if(start_time + time_req_as_delta < end_time):
-                    end_time = start_time + time_req_as_delta
+                if(run_start_time + time_req_as_delta < end_time):
+                    end_time = run_start_time + time_req_as_delta
                     #print job_id_string
                 #print "END TIME " + str(end_time)
 

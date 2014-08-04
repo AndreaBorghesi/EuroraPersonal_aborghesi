@@ -15,17 +15,17 @@ import matplotlib.dates as mdates
 LOGNAME = "jobs.log"
 DATESFILE="date.tmp"
 # 31 Marzo
-DIR="/media/sda4/eurora/data_analysis/job_profiling/dataPBS_31Marzo/"
-PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/31_Marzo_corretto/plots_pbs/"
-STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/31_Marzo_corretto/stats_pbs/"
+#DIR="/media/sda4/eurora/data_analysis/job_profiling/dataPBS_31Marzo/"
+#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/31_Marzo_corretto/plots_pbs/"
+#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/31_Marzo_corretto/stats_pbs/"
 # 2 Aprile 
 #DIR="/media/sda4/eurora/data_analysis/job_profiling/dataPBS_2Aprile_1310_1510/"
 #PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/2_Aprile_1310_1510/plots_pbs/"
 #STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/2_Aprile_1310_1510/stats_pbs/"
 # 3 Aprile 
-#DIR="/media/sda4/eurora/data_analysis/job_profiling/dataPBS_3Aprile_1600_1800/"
-#PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/plots_pbs/"
-#STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/stats_pbs/"
+DIR="/media/sda4/eurora/data_analysis/job_profiling/dataPBS_3Aprile_1600_1800/"
+PLOTDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/plots_pbs/"
+STATSDIR="/media/sda4/eurora/data_analysis/job_profiling/thomasResults/3_Aprile_1600_1800/stats_pbs/"
 
 #ENergy Specs INfo
 ENERGYDIR="/media/sda4/eurora/models/thomass_with_energyRankedNodes/"
@@ -192,8 +192,8 @@ for line in iter(status.stdout.readline,''):
     hhmm = time_req.split(':')
     time_req_as_delta = datetime.timedelta(hours=int(hhmm[0]),minutes=int(hhmm[1]))
 
-    if(start_time + time_req_as_delta < end_time):
-        end_time = start_time + time_req_as_delta
+    if(run_start_time + time_req_as_delta < end_time):
+        end_time = run_start_time + time_req_as_delta
 
     #print "Putting value in list.."
     #job_exec_time_series.append((start_time,run_start_time,end_time,node_req,cpu_req,time_req_as_delta,queue))

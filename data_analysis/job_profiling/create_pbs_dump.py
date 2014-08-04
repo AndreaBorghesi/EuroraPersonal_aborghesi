@@ -186,8 +186,8 @@ for line in iter(status.stdout.readline,''):
     hhmm = time_req.split(':')
     time_req_as_delta = datetime.timedelta(hours=int(hhmm[0]),minutes=int(hhmm[1]))
 
-    if(start_time + time_req_as_delta < end_time):
-        end_time = start_time + time_req_as_delta
+    if(run_start_time + time_req_as_delta < end_time):
+        end_time = run_start_time + time_req_as_delta
 
     #print "Putting value in list.."
     #PBS_job_exec_time_series.append((start_time,run_start_time,end_time,node_req,cpu_req,time_req_as_delta,queue))
