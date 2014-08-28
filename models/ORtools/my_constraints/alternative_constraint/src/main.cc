@@ -75,6 +75,7 @@ int test_alternative()
         solver.AddConstraint(cst2);
 
 
+        cout << "STARTING" << cst0 << "\n" << endl;
         cout << "Constraint 0, initial status: " << cst0 << "\n" << endl;
         cout << "Constraint 1, initial status: " << cst1 << "\n" << endl;
         cout << "Constraint 2, initial status: " << cst2 << "\n" << endl;

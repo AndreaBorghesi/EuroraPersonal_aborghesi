@@ -17,10 +17,7 @@
 
 from google.apputils import app
 import gflags
-#from ortools.constraint_solver import pywrapcp
-#from .my_constraints.alternative_constraint import pywrapcp_acst as pycp
-#import my_constraints.alternative_constraint.pywrapcp_acst as pycp
-import pywrapcp_acst as pycp
+import pywrapcp_acst as pywrapcp
 import EuroraNode
 from EuroraJob import Job
 import EuroraJob
@@ -87,12 +84,12 @@ def GetSolution(task,utilNodes,refTime,refTime_asDate,jobs,nodes,alternativeCons
             #print "usedNodes after"
             #print usedNodes
             job.allocate(usedNodes)
-        #print "\n"
-        #print job.humanPrintJob()
+            print "\n"
+            print job.humanPrintJob()
     #print "\nafter\n" + jobs[10].humanPrintJob()
 
-    print "After (1) solution found" 
-    debugPrint(task,utilNodes,refTime,refTime_asDate,jobs,nodes,alternativeCons,cumlCons_cores,cumlCons_gpus,cumlCons_mics,cumlCons_mem)
+    #print "After (1) solution found" 
+    #debugPrint(task,utilNodes,refTime,refTime_asDate,jobs,nodes,alternativeCons,cumlCons_cores,cumlCons_gpus,cumlCons_mics,cumlCons_mem)
 
     
 
@@ -245,13 +242,7 @@ def main(unused_argv):
                     utilNodes[(i,j,k)].SetStartMin(refTime)
 
 
-     # alternative constraint
-
-#    self._outerInterval.SetStartMin(min([interval.StartMin() for interval in self._innerIntervals]))
-#    self._outerInterval.SetEndMax(min([interval.EndMax() for interval in self._innerIntervals]))
-#    solver.Add(solver.SumEqual([interval.PerformedExpr() for interval in self._innerIntervals], n * self._outerInterval.PerformedExpr()))
-
-
+    # alternative constraint
     alternativeCons = {}
     for i,job in jr.jobs.items():
         alternativeJobs = []
@@ -259,7 +250,7 @@ def main(unused_argv):
             for k in range(numberOfJointNodes(job,node)):
                 alternativeJobs.append(utilNodes[(i,j,k)])
         #print "-------" + str(alternativeJobs)
-        altCons = AlternativeConstraint(solver,task[i],alternativeJobs,job.nNodes)
+        altCons = pywrapcp.AlternativeConstraint(solver,task[i],alternativeJobs,job.nNodes)
     #    solver.Add(altCons)
         alternativeCons[i]=altCons
 
@@ -326,8 +317,8 @@ def main(unused_argv):
     objective = solver.Minimize(obj_var, 1)
 
 
-    print "After model created" 
-    debugPrint(task,utilNodes,refTime,refTime_asDate,jr.jobs,nr.nodes,alternativeCons,cumlCons_cores,cumlCons_gpus,cumlCons_mics,cumlCons_mem)
+    #print "After model created" 
+    #debugPrint(task,utilNodes,refTime,refTime_asDate,jr.jobs,nr.nodes,alternativeCons,cumlCons_cores,cumlCons_gpus,cumlCons_mics,cumlCons_mem)
 
 
     # Search phase 
@@ -338,9 +329,10 @@ def main(unused_argv):
     restart_monitor = solver.LubyRestart(5)
     solver.NewSearch(db, [objective, search_log, global_limit, restart_monitor])
 
-    print maxHorizon
+    print 'Max Horizon: ', maxHorizon
 
     while solver.NextSolution():
+        print 'Solution Fuound'
         print 'Objective:', objective
         print '---------  Scheduled Jobs ----------'
         GetSolution(task,utilNodes,refTime,refTime_asDate,jr.jobs,nr.nodes,alternativeCons,cumlCons_cores,cumlCons_gpus,cumlCons_mics,cumlCons_mem)
